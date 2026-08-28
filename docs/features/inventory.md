@@ -117,6 +117,49 @@ Use Quick Add when you want to inventory filament without picking a specific sli
 !!! tip "Group Similar Spools"
     After adding multiple identical spools, use the **Group** toggle in the inventory toolbar to collapse them into a single row with a count badge. This keeps your inventory clean when you have many spools of the same filament. Click a group to expand and see individual spools.
 
+## :material-link-variant: Linked Spools
+
+If you own the same product many times over (say, 90 identical refills),
+every record is a copy of the same filament data — and a correction to the
+price, colour hex or temperatures had to be repeated on each one. **Linking**
+spools ([#2936](https://github.com/maziggy/bambuddy/issues/2936)) turns them
+into one group that keeps its filament master data in sync:
+
+- **What stays in sync**: brand, material and subtype, colour name/hex/extra
+  stops/effect, label and core weight, nozzle temperatures, price per kg,
+  note, and the slicer preset fields.
+- **What never syncs** — the hard boundary of the feature: measured and
+  remaining weight, usage history, RFID/NFC tag IDs, storage location and
+  AMS slot, archive state, category and the low-stock override. Those
+  describe the individual spool.
+- **Linking**: select two or more spools and click **Link** in the
+  multi-select toolbar, or use **Link with existing spool…** in the edit
+  dialog. You pick the *source* — its filament data wins and is copied to
+  the others once. The dialog names how many records that overwrites.
+- **Editing**: changing filament data on any member asks
+  "apply to N linked spools?" and then updates the whole group. Weight or
+  location edits never trigger this. Bulk edits propagate their
+  filament-data part to group members outside the selection too.
+- **Indicator**: linked records show a chain icon in the *Linked* column;
+  the edit dialog names the group size and offers **Unlink**.
+- **Unlinking / deleting**: a spool leaves the group keeping its current
+  data; a group left with fewer than two members dissolves automatically.
+- **API / scan flow**: `POST /api/v1/inventory/spools` accepts
+  `link_to_spool_id`, so a SpoolBuddy/ESPoolBuddy scan can attach a fresh
+  refill to the known product directly.
+
+!!! tip "Auto-link scanned spools"
+    Turn on **Settings → Filament → Auto-link scanned spools** and every
+    RFID/SpoolBuddy-added spool that matches an existing product (brand,
+    material, subtype, colour) is linked automatically — it arrives with
+    the full filament data, **price per kg included**, instead of blank
+    fields. Off by default.
+
+!!! note "Spoolman mode"
+    Linking is a built-in-inventory feature. In Spoolman mode the same
+    outcome already exists structurally: many spools share one Spoolman
+    filament.
+
 !!! tip "Multi-colour gradients and transparency"
     Multi-colour spools (gradient, dual-colour, tri-colour, multicolour) and translucent filaments now render correctly in the inventory. **Paste a hex list** like `EC984C,#6CD4BC,A66EB9,D87694` into the **Extra colours** field — that's the same format 3dfilamentprofiles.com puts on its filament details pages, so you can copy and paste directly. The swatch becomes a gradient strip; setting the spool's **Subtype** to *Multicolor* makes it render as a colour wheel pie instead. Transparency in the base colour (alpha < FF) shows through a checkerboard pattern beneath the colour layer, so partially translucent spools actually look translucent on the inventory page. Pick an **Effect** (*Sparkle*, *Wood*, *Marble*, *Glow*, *Matte*) for an overlay that mimics how the spool looks in real life. None of these affect the slicer profile or anything the printer sees — they're purely a visual hint to help you tell spools apart at a glance. The same fields exist on entries in **Settings → Color Catalog**, so a multi-colour combo can be saved once and reused across spools.
 
