@@ -175,6 +175,7 @@ Custom materials work just like built-in ones for inventory tracking, usage hist
 | **Remaining Weight** | Current filament remaining — shows `label_weight - weight_used` with a reference maximum |
 | **Cost per kg** | Used for archive cost roll-ups in Statistics. |
 | **Category** | Free-text label like *Production*, *Prototype*, or *Client A*. Used purely for organisation — appears as an inventory filter chip and as a way to group spools that share a different low-stock threshold. The form autocompletes from categories already in use across your other spools so casing stays consistent. Optional. |
+| **Material No.** | Your internal purchasing / article number (e.g. *15* = Bambu Lab PLA Basic). Shared by every spool of the same product — see [Material Numbers](#material-numbers). Optional. |
 | **Low-stock threshold (this spool)** | Per-spool override of the global low-stock percentage. Leave blank to use whatever's set in the inventory's stat-card threshold control (default 20 %). Useful for marking *production* spools to alert earlier (e.g. 50 %) while letting *prototype* spools stay quiet until much later. The override applies to both the stat-card "Low Stock" count and the "Low Stock" filter. |
 | **Storage Location** | Physical shelf, drawer, or drybox from your [locations catalog](storage-locations.md). Pick an existing entry from the dropdown or type a new name and click **Add**. |
 | **Note** | Free-text notes about the spool |
@@ -553,6 +554,53 @@ with an n:m assignment, not a free-text field that drifts in spelling.
 
 ---
 
+## :material-identifier: Material Numbers
+
+If your business purchases and costs filament by an internal article number
+(e.g. *15* = Bambu Lab PLA Basic, *16* = Bambu Lab ABS-GF), the **Material
+No.** field puts that identifier on the spool record itself
+([#2870](https://github.com/maziggy/bambuddy/issues/2870)) — unlike the
+free-text note it is sortable, filterable and usable as a statistics group.
+It is *your* number for the product; the article number on a
+[supplier assignment](#suppliers) is the supplier's number for it, and the
+two are independent.
+
+- **Where to set it**: in the spool dialog next to *Cost per kg* and
+  *Category* (with autocomplete from numbers already in use), or via
+  **Bulk Edit** to number an existing inventory in one pass. Surrounding
+  spaces are trimmed and a blank value means *no number*, so `15` and
+  `15 ` can never become two groups.
+- **Inheritance**: a new spool of an already-numbered product — same
+  brand, material, subtype and colour — arrives with the number filled in
+  automatically. That covers manual adds, bulk adds, the API, and spools
+  created by the RFID auto-add when a new refill is scanned. A blank field
+  on a new spool of such a product therefore always inherits: to keep one
+  spool deliberately unnumbered, clear its number after adding it.
+  **CSV import does not inherit** — the file is authoritative, so a row
+  without a number imports without one.
+- **List & search**: an optional sortable *Material No.* column (enable it
+  in the column chooser), a filter chip ("everything with number 15",
+  including a *No material number* option), and the free-text search also
+  matches the number.
+- **Statistics**: the Statistics page gains a
+  [By Material Number](statistics.md#by-material-number) widget — spool
+  count, remaining stock, consumed grams and cost per number. Consumption
+  and cost follow the dashboard's date range and come from the recorded
+  usage history (archived spools included); stock is always the current
+  state.
+- **Backup & CSV**: the number is part of the GitHub backup and restore,
+  and of the inventory CSV as the `material_number` column — see the
+  [CSV schema](#csv-schema).
+
+!!! note "Spoolman mode"
+    In Spoolman mode the number is read from Spoolman's own filament-level
+    `article_number` and shown read-only — maintain it in Spoolman itself.
+    The field is not shown in the spool dialog or in Bulk Edit, the
+    By Material Number widget is hidden (it groups Bambuddy's own spools),
+    and CSV import and export are disabled as for the rest of the inventory.
+
+---
+
 ## :octicons-graph-16: Inventory Forecast
 
 See inventory depletion rates based on material usage and handle stock logistics.
@@ -749,6 +797,7 @@ The header is fixed but **case- and space-tolerant** — `Color Name`, `color-na
 | `storage_location` | | Where the spool is stored (e.g. `Shelf A`). Round-trips on export/import. |
 | `category` | | User-defined category (e.g. `Production`, `Prototype`). Round-trips on export/import. |
 | `low_stock_threshold_pct` | | Per-spool low-stock threshold, `1`–`99` (%). Blank falls back to the global setting. |
+| `material_number` | | Your internal [material number](#material-numbers), up to 64 characters, trimmed. Round-trips on export/import. Import does not inherit it — a blank cell leaves the spool without a number. |
 | `suppliers` | | All assigned [suppliers](#suppliers), separated by `;` (e.g. `Extrudr; Filament24`). Matched against your existing supplier list by name, trimmed and case-insensitive. Import **never creates suppliers**: an unknown name is a warning in the preview, that assignment is dropped and the row still imports. |
 | `purchase_supplier` | | The *Bought here* supplier, or blank. Matched the same way; it counts as an assignment even if the `suppliers` cell leaves it out. |
 

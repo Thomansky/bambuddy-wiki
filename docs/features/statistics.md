@@ -115,6 +115,16 @@ Consumption and cost grouped by where the spools were bought:
 - Sorted by consumption, heaviest first
 - Hidden in Spoolman mode — it groups Bambuddy's own spools, not the assignments kept for Spoolman spools
 
+### By Material Number
+
+Stock, consumption and cost grouped by your internal material number (see [Material Numbers](inventory.md#material-numbers)):
+
+- One row per material number in use; spools without a number are left out
+- **Spools** and **Remaining** stock — always the current state; an over-used spool counts as empty and never reduces its siblings' stock
+- **Consumed** and **Cost** — from the recorded usage history, following the selected date range; archived spools included. A number with stock but no usage in the range still lists, with zero consumption
+- Sorted by consumption, heaviest first; ties by number, so the order is stable
+- Hidden in Spoolman mode — it groups Bambuddy's own spools
+
 ### Printer Utilization
 
 Hours of active printing:
