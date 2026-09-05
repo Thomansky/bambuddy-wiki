@@ -366,6 +366,7 @@ When a camera snapshot is available (e.g. First Layer Complete, Print Started, P
 | **Print Failed** | Print fails or errors (includes scaled filament usage and progress) |
 | **Print Stopped** | Manual cancellation (includes scaled filament usage and progress) |
 | **Plate Clear Required** | A print reached a terminal state and the queue is gated until the build plate is confirmed clear. Off by default — it fires after every print, at the same moment as Print Completed. Also published over [MQTT](mqtt.md). |
+| **Outcome Confirmation** | A completed print that opted in to [outcome confirmation](archiving.md#post-print-outcome-confirmation) asks for its good/reject verdict. The message carries one-tap verdict links — on **ntfy** they render as Good/Reject buttons directly in the push notification (requires the *External URL* setting so the links are absolute); Pushover gets a supplementary link into the confirmation dialog. On by default — it only ever fires for prints where you enabled *Ask for Outcome*, so this toggle just mutes a channel. |
 | **Missing Spool Assignment** | Print started with required AMS trays that have no assigned spool (off by default) |
 | **First Layer Complete** | First layer finished — check adhesion remotely (includes camera snapshot) |
 | **Bed Cooled** | Bed temperature dropped below threshold after print (configurable in Settings) |
