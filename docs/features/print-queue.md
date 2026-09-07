@@ -369,7 +369,7 @@ When SJF is enabled, the scheduler picks the shortest pending print for each pri
 2. **Shortest duration next** — among remaining items, the shortest print time wins
 3. **Position as tiebreaker** — equal-duration items use their original queue position
 
-The queue page automatically reorders to show the scheduler's actual execution order when SJF is active.
+The queue page automatically reorders to show the scheduler's actual execution order when SJF is active, and the [Timeline](#timeline-view) chains its bars in the same order &mdash; so what you see queued is what will run.
 
 ### Starvation Guard
 
@@ -821,6 +821,8 @@ The Timeline only shows **committed schedules** so it reads as a real forecast:
 | Waiting (`waiting_reason` set) | **No** | Blocked on filament / printer state |
 
 A lane is **dropped entirely** if it has no active print AND no scheduled item that meets these criteria. If the whole fleet is idle with nothing committed, the tab shows an empty-state notice instead of a misleading blank Gantt.
+
+Within a lane, bars chain in the order the scheduler will dispatch them &mdash; queue position normally, or [Shortest Job First](#shortest-job-first-sjf) order when SJF is enabled.
 
 ### Per-bar tooltip
 
