@@ -558,7 +558,7 @@ Settings → **Workflow** → **Queue & Dispatch** → **Preheat & Heat Soak** c
 | Setting | Default | Range | Purpose |
 |---------|--------:|-------|---------|
 | Enable preheat & soak | Off | — | Default for new queue items. Per-print override flips the decision per item — see below. |
-| Per-filament chamber target (°C) | per-type defaults | 0–65 each | Map of filament type → chamber temperature. Bambuddy picks the **max across the slots this print uses**, so a plate printing PA and PLA together chooses PA's 50, not PLA's 0. PLA-only prints derive 0 and skip the chamber phase automatically — see [Which slots count](#which-slots-count). |
+| Per-filament chamber target (°C) | per-type defaults | 0–65 each | Map of filament type → chamber temperature. Bambuddy picks the **max across the slots this print uses**, so a plate printing PA and PLA together chooses PA's 50, not PLA's 0. A print whose slots all derive 0 — PLA, PETG, TPU, PVA — skips preheat entirely and dispatches immediately, with the feature left on. See [Which slots count](#which-slots-count). |
 | Max wait (seconds) | 900 | 60–3600 | Hard cap on the chamber warm-up phase before falling through to the soak phase. Stops a cold room from stalling the queue indefinitely. |
 | Soak (seconds) | 300 | 0–1800 | Hold time at temperature after the chamber reaches the target (or max-wait elapses). 0 = no soak. |
 | Keep bed warm between prints | Off | — | Hold the bed hot between consecutive chamber-heated prints so the chamber does not cool while you clear the plate — see [Keep bed warm between prints](#keep-bed-warm-between-prints). |
@@ -578,6 +578,14 @@ An external spool *is* read when the mapping names it, so an ABS print fed from 
 
 !!! note "Prints sent through a Virtual Printer"
     A mapping captured from BambuStudio or OrcaSlicer records the external spool the way the slicer does — the same value it uses for a slot the plate does not print. Those two cannot be told apart, so a print that draws from **both** the AMS and the external spool derives its chamber target from the AMS half only. Set a **Chamber target override** on the print if the external spool is the one that needs the heat.
+
+#### When preheat does nothing at all
+
+A chamber target of 0 derived from the filament map means the materials this print loads want no chamber conditioning, so there is nothing to soak for — and the whole stage is skipped. The print dispatches immediately even with the feature enabled, which is what you want on a farm that runs mostly PLA with the occasional ABS job: leave the toggle on and only the prints that need the heat pay for it.
+
+The one thing the skip still does is put the airduct flap back to **cooling** on the models that have one, so a PLA print following an ABS print does not inherit the closed flap.
+
+This applies to the map's 0, not to an explicit one. A **Chamber target override** of 0 on a print, or a per-print Preheat override of **On**, still heats the bed and runs the soak — see [Per-print override](#per-print-override).
 
 The bed target is normally read from the print file's `bed_temperature` metadata — no manual override. If the file has no parseable bed temperature, the behaviour depends on the chamber:
 
@@ -607,7 +615,7 @@ The `Print Options` panel in any print / queue-edit dialog has a **Preheat & Hea
 | **On** | Force preheat for this print even when the global is off — useful for a one-off ABS print on an otherwise PLA-only farm. |
 | **Off** | Force preheat off for this print even when the global is on — useful for a quick PLA test or a print where you've already pre-warmed the printer manually. |
 
-The **Chamber target override** field (shown when override ≠ Off) accepts an explicit °C target (0–65) that bypasses the per-filament map. Leave blank to use the per-filament derivation. Setting it to **0** explicitly disables the chamber phase for this print while keeping the bed phase + soak timer active.
+The **Chamber target override** field (shown when override ≠ Off) accepts an explicit °C target (0–65) that bypasses the per-filament map. Leave blank to use the per-filament derivation. Setting it to **0** explicitly disables the chamber phase for this print while keeping the bed phase + soak timer active — this is how you ask for a bed-only preheat, and it is the difference between a 0 you typed and a 0 the filament map derived, which skips the stage outright.
 
 The 65 °C ceiling is the highest any Bambu chamber heater reaches — the H2 series (H2C / H2D / H2D Pro / H2S) and X2D. X1E tops out at 60 °C and its firmware clamps anything above that, so the ceiling is shared rather than per model (the per-filament map is global, not per printer).
 
@@ -622,6 +630,8 @@ Bambu printers have three distinct hardware tiers for chamber heat, and the preh
 | X1C | yes | **no** | No `M141` (it has no effect — these printers cannot actively heat the chamber). The bed is the only heat source; the stage polls the chamber sensor and considers the phase satisfied when the sensor reaches the target via bed radiation. Radiant warm-up on a cold X1C to ABS-friendly temps is 20–30 min — the max-wait cap is a hard ceiling, the stage falls through to soak when it elapses. |
 | P2S | yes | **no** (but has cooling/heating airduct) | Same as X1C — bed radiation only, no `M141`. The airduct flap is still flipped to match the chamber target so the right airflow is in place during the radiant warm-up + soak. |
 | P1S, P1P, A1, A1 Mini | **no** | **no** | No chamber sensor exists on these models — the `chamber_temper` MQTT field they report is meaningless and is ignored. The stage heats the bed and runs the soak timer; the soak duration is the only control that matters for these printers. |
+
+Every row above describes a print that has a chamber target to work toward. A print whose filaments derive 0 skips the stage on all of them — including the P1S tier, where the bed and the soak timer would otherwise run with no chamber requirement behind them.
 
 #### Airduct flap (H2C / H2D / H2D Pro / H2S / X2D / P2S)
 
