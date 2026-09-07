@@ -1034,13 +1034,40 @@ like this:
 FTP SSL error connecting to 192.168.1.50: [SSL: WRONG_VERSION_NUMBER] wrong version number
 ```
 
-**Restart the printer.** In every case seen so far this is the printer's own
-file service getting stuck: the port still accepts connections -- so the
-Connection Diagnostic's port check and any firewall test look fine -- but
-nothing behind it speaks TLS any more. It is not caused by the printer model,
-the firmware version, or a Bambuddy setting. The same model and firmware works
-normally on other installs, and the affected printers worked for days before
-and after the fault. Power-cycling the printer clears it.
+**What this is not.** It is not the printer model, the firmware version, a TLS
+version mismatch, or a Bambuddy setting. The same models and firmware run
+normally on other installs; on one 9-printer farm three P2S units failed while
+three more of the same model on the same switch and the same access point never
+did. Probed directly on port 990, every Bambu printer measured so far -- six
+P2S, two X1C, an H2D -- refuses TLS 1.3 and completes on 1.2, so the negotiated
+version was already 1.2 and there is no version to fall back from. A genuine
+version mismatch reports itself as `TLSV1_ALERT_PROTOCOL_VERSION`;
+`WRONG_VERSION_NUMBER` is what you get when the first bytes back are not a TLS
+record at all.
+
+**We do not know what triggers it, and there is no fix to apply yet.** Earlier
+revisions of this page said to power-cycle the printer. That advice has been
+withdrawn: the reporter who prompted it did a full power-off on both affected
+printers and the failure continued unchanged. The port still accepts
+connections -- so the Connection Diagnostic's port check and any firewall test
+look fine -- and a manual `openssl s_client` to the same printer a second later
+completes a clean handshake and returns a valid certificate. Restarting is
+harmless if you want to try it, but do not expect it to help, and please do not
+conclude from a restart that the problem is gone.
+
+**What would help is a capture.** From 1.2.5.4, when a handshake fails this way
+Bambuddy opens one plain connection to port 990 and logs whatever the printer
+actually said, marked as the line to quote in a report:
+
+```
+Printer 192.168.1.50 answered port 990 in cleartext with: 421 Too many connections
+```
+
+If your log has that line, it is the single most useful thing you can post. If
+it says the printer sent nothing readable, the refusal was momentary and had
+already cleared. To capture one, turn on **Debug Logging** on the **System**
+page, wait for a print to archive with only a name, then download the **Support
+Bundle** from the same page and attach it to your report.
 
 While a printer is in this state, anything that reads a file from it fails:
 
@@ -1063,9 +1090,9 @@ file size, filament totals and layer count while the print is still running.
 Recovery only applies to this pause: a print the printer kept on internal
 storage has no FTPS copy to come back for, and that archive stays as it is.
 
-If a restart does not help, check that no firewall or TLS-inspecting proxy sits
-between Bambuddy and the printer, and see [A1/A1 Mini FTP Issues](#a1a1-mini-ftp-issues)
-if the printer is an A1 or A1 Mini.
+Also check that no firewall or TLS-inspecting proxy sits between Bambuddy and
+the printer, and see [A1/A1 Mini FTP Issues](#a1a1-mini-ftp-issues) if the
+printer is an A1 or A1 Mini.
 
 ### Printer connection keeps dropping { #mqtt-connection-unstable }
 
