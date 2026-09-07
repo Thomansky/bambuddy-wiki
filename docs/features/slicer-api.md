@@ -467,10 +467,23 @@ Check the Bambuddy logs for connection errors to the sidecar URL. Common causes:
 - `Sidecar URL` field in Settings doesn't match the actual host/port
 - Bambuddy is running in Docker on a different network than the sidecar &mdash; use the host's LAN IP instead of `localhost`
 
+### The slicer CLI rejects a field as "not in range"
+
+```
+Param values in 3mf/config error:
+wall_filament: 0 not in range [1.000000,...]
+```
+
+Bambu Studio writes "inherit / unset" markers into a project's embedded settings: `-1` on a handful of process fields, and `0` on the three feature-filament indices (`wall_filament`, `sparse_infill_filament`, `solid_infill_filament`, meaning "use whichever filament the object is set to"). Whether a slicer CLI accepts them depends on its build &mdash; OrcaSlicer 2.3 and earlier counted the filament indices from 1 and reject `0`, while 2.4 and Bambu Studio accept it. The check runs on the embedded settings *before* the profiles Bambuddy passes are applied, so a rejected marker fails the slice no matter what you picked in the modal.
+
+From 1.2.6 Bambuddy removes those markers from the copy it hands the sidecar, on the real slice and on the automatic plate preview alike, and the slicer falls back to its own default for the field. If you still see this error, the field is not in the allowlist yet &mdash; open an issue quoting the line, which names it. Pinning a current sidecar image is worth doing anyway: the tags are versioned, so an install set up long ago can still be running an old slicer.
+
 ### A STEP file has no Slice button
 Server-side slicing takes **STL and 3MF only**. Neither slicer can load a STEP from its command line &mdash; OrcaSlicer 2.4.2 and Bambu Studio 02.07.01.62 both answer `Unknown file format. Input file must have .stl, .obj, .amf(.xml) extension.` &mdash; so from 1.2.6 the button is hidden rather than offered and then failing after the upload.
 
-**Open in Slicer** still works on STEP files: the desktop applications open them fine, and that has always been the working path. Open the STEP there, export it as STL or 3MF, and the exported file slices server-side as normal.
+**Open in Slicer** still works on STEP files **when the handoff targets OrcaSlicer**. Open the STEP there, export it as STL or 3MF, and the exported file slices server-side as normal.
+
+With **Bambu Studio** as the desktop target the button is not offered on a STEP, or on an STL. That is a limit of Bambu Studio's URI handler, not of the application: it loads only `.3mf` from a link and refuses anything else with `Download failed, unknown file format.` before it even fetches the file. Until 1.2.6 Bambuddy offered the handoff anyway and the failure looked like a broken model. If you want the handoff for STL or STEP, set **Open in Slicer** to OrcaSlicer &mdash; it can stay on Bambu Studio for **Preferred Slicer**, the two are separate settings. Otherwise, open the file in Bambu Studio yourself and save it as a 3MF.
 
 ### "File too large" / the model exceeds the sidecar's upload limit
 The sidecar caps the size of a model it will accept. From the 1.2.6 images that cap is **512 MB** and configurable; older images were fixed at **100 MB** and reported the rejection as a bare `HTTP 500 File too large`, which looks like a slicer crash and is what [#2802](https://github.com/maziggy/bambuddy/issues/2802) was.

@@ -385,7 +385,7 @@ When extracting ZIP files containing STL files:
 
 ## :material-cog: Slice a file
 
-Unsliced models carry a **Slice** action: in the file card's **&#8942;** menu, and as an icon in the trailing actions of the list view. It appears on source geometry only &mdash; `.3mf`, `.stl`, `.step` and `.stp` &mdash; and never on a file that is already sliced, since sliced G-code is an output rather than an input. A `.3mf` that turns out to hold G-code counts as sliced here too, whatever it is called.
+Unsliced models carry a **Slice** action: in the file card's **&#8942;** menu, and as an icon in the trailing actions of the list view. It appears on source geometry only &mdash; `.3mf`, `.stl`, `.step` and `.stp`, narrowed to `.3mf` alone when the desktop handoff targets Bambu Studio (see the note below) &mdash; and never on a file that is already sliced, since sliced G-code is an output rather than an input. A `.3mf` that turns out to hold G-code counts as sliced here too, whatever it is called.
 
 What the action does depends on whether you run the [slicer sidecar](slicer-api.md):
 
@@ -395,6 +395,9 @@ What the action does depends on whether you run the [slicer sidecar](slicer-api.
 | On | :material-cog: | Opens Bambuddy's slice modal and slices server-side, dropping a `.gcode.3mf` in the same folder |
 
 Which desktop slicer receives the handoff comes from **Settings &rarr; Workflow &rarr; Slicer &rarr; Open in Slicer**, falling back to your **Preferred Slicer** when it is left on *Same as API slicer*.
+
+!!! note "With Bambu Studio, the handoff is 3MF-only"
+    Bambu Studio's URI handler loads `.3mf` and nothing else &mdash; hand it an STL or a STEP and it answers `Download failed, unknown file format.` without fetching the file. So with **Open in Slicer** set to Bambu Studio, the Slice action appears on `.3mf` files only. Set it to OrcaSlicer, whose handler has no such limit, and `.stl`, `.step` and `.stp` get it back. This applies to the desktop handoff alone: with **Use Slicer API** on, Slice goes to the sidecar and takes `.3mf` and `.stl` whatever the desktop target is.
 
 !!! info "Where the sliced file is written"
     "The same folder" is literal, including for [external folders](#external-folders): slice a model that lives on a NAS mount and the `.gcode.3mf` is written to that mount, next to its source, under a name you can find from any other machine on the share. A name already in use is not overwritten &mdash; the new file becomes `Model (2).gcode.3mf`.
