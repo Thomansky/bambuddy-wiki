@@ -835,7 +835,7 @@ Administrators can extend the default 24-hour session lifetime under **Settings 
 - The setting applies to **new logins only**. Already-issued tokens keep their original expiry — lowering the value does not retroactively log existing users out, and raising it does not retroactively extend them.
 - The setting is gated by `settings:update`, which by default is held only by the **Administrators** group.
 - The **"Remember Me"** checkbox on the login screen still only controls whether the token persists across browser restarts (localStorage vs sessionStorage). The Session Policy controls how long the token itself remains valid.
-- API keys, camera-stream tokens, WebSocket tokens, and slicer-download tokens have their own independent lifetimes and are **not** affected by this setting.
+- API keys, camera-stream tokens, media tokens, WebSocket tokens, and slicer-download tokens have their own independent lifetimes and are **not** affected by this setting.
 
 !!! warning "Security tradeoff"
     Longer sessions mean a stolen token has a longer blast radius. The 24-hour default exists for that reason. Bumping to 7 or 30 days is a per-deployment call — make it only on environments you trust.

@@ -29,6 +29,39 @@ curl -H "X-API-Key: your-api-key" \
 
 See [API Keys & Webhooks](../features/api-keys.md) for details.
 
+### Media Token
+
+Thumbnails, plate previews, timelapses, print photos, QR codes, cover images
+and link icons are loaded by the browser as `<img>` and `<video>` sources,
+which cannot carry an `Authorization` header. Those routes therefore also
+accept a token in the query string:
+
+```bash
+curl -X POST -H "Authorization: Bearer <jwt>" \
+  http://localhost:8000/api/v1/auth/media-token
+# => {"token": "..."}
+
+curl "http://localhost:8000/api/v1/archives/42/thumbnail?token=..."
+```
+
+Any signed-in user can mint one; it is valid for 60 minutes and is not
+consumed, so one token serves every image on a page. It is **authentication,
+not authorisation** — each route still applies the permission and ownership
+rules of the resource it serves, so a media token reaches exactly the images
+its holder could already see listed.
+
+!!! note "Scripts and integrations do not need one"
+    The media routes accept `X-API-Key` and `Authorization: Bearer` directly.
+    The query token exists only for browser element loads.
+
+!!! warning "Not the camera stream token"
+    A `camera_stream`, `camwall` or `overlay` token is refused on these routes,
+    and a media token is refused on the camera routes. Before Bambuddy 1.2.6
+    the media routes took the camera stream token, which made `camera:view` a
+    prerequisite for seeing any image in the app; see
+    [Long-Lived Camera Tokens](../features/camera.md#long-lived-camera-tokens)
+    for what the camera scopes do reach.
+
 ---
 
 ## :material-web: Interactive API Browser
