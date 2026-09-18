@@ -404,6 +404,13 @@ When the AMS encounters a power-related issue, the printer reports it as an HMS 
 !!! tip "Filament Presets"
     Temperature and duration defaults come from BambuStudio's official filament profiles. You can customize them in **Settings** > **AMS Display Thresholds** > **Drying Presets**. These presets are shared between manual drying, queue auto-drying, and ambient drying.
 
+!!! info "Composites dry as their base material"
+    The preset table is keyed by base material, while the printer reports filled and foamed variants by their full name — `PA6-CF`, `PETG-CF`, `ABS-GF`, `PLA-AERO`. A variant with no row of its own takes its base material's: `PETG-CF` dries at PETG's temperature, and the polyamide spellings (`PA6`, `PA11`, `PA12`, `PAHT`, `PPA`, and `Nylon`) all take PA's.
+
+    A row you add yourself still wins. Put `PA6-CF` in the table at a temperature you picked and that is what both manual and automatic drying use for it.
+
+    Materials whose base is not in the table either — `PPS`, `PEEK`, `PP`, `PE`, `PET` — are left alone by auto-drying rather than given a temperature nobody chose. Add a row for one if you want it dried automatically.
+
 ### When a Scheduled Session Starts
 
 The time you pick is the earliest start, not an exact one. A session starts on the first scheduler pass after that time when the printer is idle and the AMS is ready to dry. It can start later than the time you chose, and there is no limit on how much later.
