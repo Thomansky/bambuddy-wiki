@@ -350,6 +350,45 @@ All the routes below need a card or stick in the printer. On X1 and P1 series, w
 
 ---
 
+### Archive Card Is Empty After a Slow Transfer { #ftp-transfer-timed-out }
+
+**Symptoms:** The archive holds a name and timing but no thumbnail and no slicer data, on a printer whose other prints archive fine. It happens on big files, on prints started while the printer was busy, or on a worn SD card. The log says the download timed out rather than that the file was missing:
+
+```
+FTP download timed out after 30.0s (plus 30.0s grace) for /<print>.gcode.3mf
+Download 3MF from /<print>.gcode.3mf failed after 4 attempts
+Could not find 3MF file for print: <print>.gcode.3mf
+```
+
+**Background:**
+
+The file is on the card and the printer is serving it. What ran out was time. Bambuddy fetches a print's 3MF at the moment the print starts, which is the busiest moment the printer has: it is streaming its camera, publishing status over MQTT, and often still finishing the upload of the job itself. A large 3MF against all of that does not reliably finish inside the transfer budget, and the same file downloads in seconds once the printer settles.
+
+This is the one empty-archive cause where the card was never the problem, so the usual advice — check "Store sent files on external storage", check the slot — does not apply. You can tell it apart from a genuinely missing file by the log lines above: a file that is not on the card is answered with `550` and Bambuddy moves straight to the next path, without a timeout.
+
+**What Bambuddy does about it on its own:**
+
+From 1.2.6, a print that ends this way is not given up on. Bambuddy goes back for the file after one minute, four minutes and ten minutes, and fills the archive in where one of those lands — the thumbnail, the filament totals and the layer count all appear on the existing card, and the empty-archive banner stops counting it. Opening the print's card in the meantime does the same thing sooner, because the cover has to fetch the file anyway.
+
+So a card that is still empty an hour later is one where every attempt also ran out of time.
+
+**Solutions:**
+
+1. **Raise the transfer timeout**
+      - **Settings > Network > FTP Retry > Connection Timeout**, up to 300 seconds
+      - It is a database setting and takes effect immediately — no restart, no rebuild
+      - Worth doing on any install that prints files over ~15 MB, and on A1 and P1 series generally
+
+2. **Check the card**
+      - A worn card is the usual reason a transfer that used to fit no longer does: the same 5.4 MB file measured 45 s off a worn P1S card and 25 s off a new one
+      - Cards are consumables; replacing one is cheaper than the time spent on this
+
+3. **Give the printer less to do at print start**
+      - Closing the camera stream on the Dashboard while a print starts leaves more of the printer's link for the transfer
+      - Starting the print from Bambuddy rather than the slicer avoids Bambuddy and the slicer competing for the same connection
+
+---
+
 ### Print Started on the Printer Has No Thumbnail
 
 **Symptoms:** The archive holds a name and timing but no thumbnail, no filament total and no layer count — and it happens only for prints you started from the printer's own screen, from Handy, or by picking a file the printer already had. Prints sent from a slicer on the same machine archive in full.

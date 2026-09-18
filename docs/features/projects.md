@@ -167,6 +167,10 @@ You can still manually adjust the quantity:
 2. Set **Items Printed** to the correct number
 3. Project progress updates automatically
 
+Set it to **0** when a print finished but nothing on the plate was usable - a jam
+that the printer still reported as a success, for example. The job then counts as
+producing no items towards the project.
+
 ### Updating Existing Archives
 
 If you have existing archives with quantity=1, run the migration script:

@@ -29,6 +29,11 @@ Each AMS slot displays:
     yet, or when the index cannot be tied to one nozzle with certainty --
     Bambuddy shows nothing rather than the other nozzle's number.
 
+    On a dual-nozzle printer the profile is matched to the slot's own hotend
+    first. Some printers file one profile per filament rather than one per
+    hotend, so both nozzles' slots point at the same entries; where that is
+    what the printer sent, the calibration index is used on its own.
+
 ### Slot hover card
 
 Hovering a slot opens a card headed by the filament's colour, with the profile, K factor, fill level and — when a spool from [Inventory](inventory.md) is bound to the slot — the spool's own name.
@@ -125,6 +130,8 @@ Below those, **Other K profiles on this printer** lists everything else the prin
 
 !!! tip "Nothing in the list?"
     If the dropdown is empty, the printer has no calibrations for the installed nozzle diameter. Run a Flow Dynamics calibration, or add one from [K-Profiles](k-profiles.md).
+
+    On a dual-nozzle printer the list is narrowed to the hotend the slot feeds, but only when the printer files its calibrations that way. When it files one profile per filament instead -- both AMS units pointing at the same entries -- every profile is offered on both sides.
 
 #### Pre-Population for Configured Slots
 

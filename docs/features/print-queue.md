@@ -932,6 +932,7 @@ When items are selected, click **Edit Selected** to open the bulk edit modal:
 | **Staged** | Toggle manual start (Queue Only) mode |
 | **Auto power off** | Toggle auto power off after print |
 | **Require previous success** | Toggle conditional execution |
+| **Inject G-code** | Toggle auto-print G-code injection (only shown when a snippet is configured) |
 | **Bed levelling** | Set bed levelling (Off / Auto / On) |
 | **Flow calibration** | Set flow calibration (Off / Auto / On) |
 | **Vibration calibration** | Toggle vibration calibration |
