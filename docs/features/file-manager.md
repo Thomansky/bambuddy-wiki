@@ -740,7 +740,7 @@ POST /api/v1/library/files/upload
 # Extract ZIP file
 POST /api/v1/library/files/extract-zip
 
-# Add to queue
+# Add to queue (optionally: "printer_id" or "target_model" for the whole batch)
 POST /api/v1/library/files/add-to-queue
 
 # Delete file
@@ -754,6 +754,19 @@ POST /api/v1/library/folders/{id}/scan
 ```
 
 See [API Reference](../reference/api.md) for details.
+
+!!! info "Add to queue: where the items land"
+
+    `add-to-queue` takes `file_ids`, plus an optional `printer_id` **or**
+    `target_model` naming where the whole batch should go. With neither, each
+    file is aimed at the model its own G-code says it was sliced for, provided
+    a printer of that model is active — a queue item carrying no printer and no
+    target model is one the scheduler can never pick up, so it would sit in
+    Unassigned until someone edited it by hand.
+
+    Only sliced files (`.gcode`, `.gcode.3mf`) can be queued. Files that cannot
+    be added are reported per file in `errors`; the call succeeds with `200` as
+    long as at least one item was created, and returns `400` when none were.
 
 ---
 
