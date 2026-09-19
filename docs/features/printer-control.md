@@ -454,33 +454,41 @@ Click the badge to open a dropdown and pick the mode. The command is sent via MQ
 
 Move the build plate, toolhead, or extruder directly from the printer card — useful for inspecting the plate through the camera after a print finishes, manually positioning the toolhead before loading filament, or purging the nozzle.
 
-The jog popover groups all three axes: **Z** (build plate), **XY** (toolhead), and **E** (extruder). The popover is disabled entirely while a print is running.
+The jog popover groups all three axes: **Z** (the build plate on most models, the toolhead on a bed-slinger), **XY** (toolhead), and **E** (extruder). The popover is disabled entirely while a print is running.
 
-### Z-Jog (Build Plate)
+### Z-Jog
 
-A compact **Bed** badge appears in the controls row, between the print-speed badge and the Stop / Pause buttons. Click it to open a small popover containing:
+A compact **move** badge (crossed arrows) appears in the controls row, between the print-speed badge and the Stop / Pause buttons. Click it to open a small popover containing:
 
-- **↑ / ↓** buttons that move the plate by the selected step
+- **↑ / ↓** buttons that move the Z axis by the selected step
 - A **step selector** — `1 / 10 / 50 mm`
 
 The badge is automatically disabled while a print is running.
 
-### Not-Homed Warning (Studio-style)
+#### Which way is up
 
-After a print completes, the Z axis is usually no longer referenced. The first time you click up/down in a session, Bambuddy shows a warning modal matching the Bambu Studio / printer-touchscreen flow:
+The arrows describe what you will see move, so what they do depends on the printer:
 
-| Action | What it does |
-|--------|--------------|
-| **Home Z** | Sends `G28 Z` and dismisses the dialog — click the jog again once homing completes |
-| **Move anyway** | Bypasses soft endstops (`M211 S0`) for this move, performs the jog, then re-enables endstops (`M211 S1`). The "already warned" flag is remembered for the rest of the browser session, so subsequent jogs go through without the dialog |
-| **Cancel** | Closes the dialog, no command is sent |
+| Printer | What the Z axis carries | ↑ does | ↓ does |
+|---------|------------------------|---------|---------|
+| X1 / P1 / H2 / P2S / X2D | the build plate | plate rises toward the nozzle | plate drops away |
+| A1 / A1 Mini / A2L | the toolhead — the plate only moves in Y | toolhead lifts off the plate | toolhead descends toward it |
 
-!!! warning "Bypassing soft endstops"
-    The **Move anyway** option disables axis soft limits for a single move. Keep the step small (1 – 10 mm) until the plate is in a safe position — the printer firmware will still refuse moves that would physically crash the gantry, but it's on you to make sure the commanded distance is reasonable.
+On a bed-slinger the buttons are labelled *toolhead* rather than *plate*, because its plate cannot move in Z at all.
+
+The **API is the other way round: it does not care which printer it is talking to.** `distance` is a signed nozzle-bed gap in millimetres — positive opens the gap, negative closes it — and it goes onto the wire as the G-code Z value unchanged. `Z` is the nozzle-to-bed distance on every Bambu model, whether the bed drops away from a fixed nozzle or the nozzle rises off a fixed bed, so one call means one physical outcome everywhere.
+
+!!! tip "Scripting the jog"
+    **Positive `distance` is always the safe direction, on every model.** If you are moving the nozzle out of the way before doing something else, send a positive number and you cannot be surprised by a printer you did not test against.
+
+!!! warning "Travel limits are not enforced on any manual move"
+    Bambu's firmware does not apply its soft endstops to G-code it receives over MQTT, which is how every remote control sends a jog. This was measured for #2579 by logging the exact bytes: an H2D already at its Z limit was sent a clean `G91 / G1 Z-1.00 F600 / G90` with no `M211`, and ran straight past it — while the printer's own touchscreen refuses the identical move, because the touchscreen goes through the motion planner and injected G-code does not. Push-status reports no axis position either, so Bambuddy cannot clamp the move on its side from where the axis actually is.
+
+    Nothing Bambuddy sends can be stopped by the firmware, so **a jog is on you.** Keep the step small as you approach the plate, and use auto-home first if the printer has not been homed since its last print. The jog popover carries the same warning.
 
 ### XY-Jog (Toolhead)
 
-Move the toolhead by a signed relative X/Y distance per click. Distinct from Z-Jog because the XY plane has no soft-endstop convention to "ignore" — the firmware enforces print volume bounds, but Bambuddy clamps the request server-side as a first guard.
+Move the toolhead by a signed relative X/Y distance per click. No direction table needed here: X and Y describe where the nozzle goes relative to the print on every model. The firmware enforces the print volume, and Bambuddy clamps the request server-side as a first guard.
 
 | Item | Value |
 |------|-------|
@@ -512,14 +520,16 @@ All jog and home actions require `printers:control`. With authentication enabled
 | Endpoint | G-code Sent |
 |----------|-------------|
 | `POST /printers/{id}/bed-jog?distance=N` | `G91 / G1 ZN F600 / G90` |
-| `POST /printers/{id}/bed-jog?distance=N&force=true` | `M211 S0 / G91 / G1 ZN F600 / G90 / M211 S1` |
 | `POST /printers/{id}/xy-jog?x=N&y=N` | `G91 / G1 XN YN F6000 / G90` |
 | `POST /printers/{id}/extruder-jog?distance=N` | `M83 / G1 EN F300 / M82` |
-| `POST /printers/{id}/home-axes?axes=z` | `G28 Z` |
-| `POST /printers/{id}/home-axes?axes=xy` | `G28 X Y` |
-| `POST /printers/{id}/home-axes?axes=all` | `G28` |
+| `POST /printers/{id}/home-axes?axes=z ❘ xy ❘ all` | `G28` |
 
 The `distance` parameter is validated server-side: Z and XY are bounded to ±200 mm, extruder to ±100 mm. All three reject `0`.
+
+Two parameters that older versions of this page documented are gone, both because the clever behaviour they selected ended with the nozzle and the plate touching:
+
+- **`&force=true` on the jog** wrapped the move in `M211 S0` / `M211 S1`. `M211 S0` turns the soft travel limits off *globally* — including on the printer's own touchscreen, until the next power cycle — and the UI sent it on every single jog. Bambuddy no longer touches `M211` at all. If a printer still runs past its limits from its own screen, an older build left them disabled at the firmware level: power-cycle it once to restore them.
+- **`axes=z` and `axes=xy`** used to home only that axis. Homing Z alone can drive the bed into a toolhead that was never parked, so the endpoint always runs the printer's full auto-home sequence. The parameter is still accepted and still ignored.
 
 ---
 
