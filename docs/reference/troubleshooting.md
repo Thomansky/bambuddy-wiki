@@ -16,9 +16,27 @@ Solutions for common issues with Bambuddy.
 Before working through the steps below, let Bambuddy check for you. The
 built-in **Connection Diagnostic** runs the same checks a maintainer would:
 port reachability (MQTT 8883, FTPS 990, RTSPS 322), LAN Developer Mode,
-Docker network mode, printer/host subnet match, printer credentials, and
+container network mode, printer/host subnet match, printer credentials, and
 the printer-side "Store sent files on external storage" toggle (install [step 4](../getting-started/index.md#step-4-enable-store-sent-files-on-external-storage)).
 Each result comes with a plain-language fix.
+
+!!! info "What the network checks read"
+
+    **Container network mode** names the engine Bambuddy is running under —
+    Docker, Podman, Kubernetes or an LXC/LXD system container — and whether
+    it shares the host's network. Bridge networking is the one shape that
+    breaks printer discovery and the Virtual Printer. Where the mode cannot
+    be read (Podman on a host with no container bridges, for instance) the
+    check says so rather than guessing; if discovery and the Virtual Printer
+    work, there is nothing to change.
+
+    **Network subnet** compares the printer against the network configured on
+    whichever of Bambuddy's interfaces routes to it, at that interface's real
+    prefix. A `/22`, a `/16` or a `/25` is read as written, and on a host with
+    several NICs the printer is compared against the one it is actually
+    reached through. If no prefix can be established the check is skipped —
+    it will not assert that two addresses are on different networks without
+    knowing how far the network reaches.
 
 Open it from any of:
 
