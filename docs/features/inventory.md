@@ -733,7 +733,7 @@ Pre-defined empty spool weights for quick selection when adding spools. Ships wi
 
 ### Color Catalog
 
-Pre-defined color palettes from filament brands. Ships with 600+ colors across 20 brands. Used in the color picker when adding, editing, or copying spools, **and as the single source of truth for resolving hex colors to human-readable names everywhere in the UI** — the Printer tab AMS popup, the inventory list, the print modal filament override cards, and auto-provisioned inventory entries all look up display names from this table. If a color name shows up wrong (e.g. "Scarlet Red" instead of "Cherry Pink"), edit the offending entry or use **Sync** to pull the canonical name from FilamentColors.xyz.
+Pre-defined color palettes from filament brands. Ships with 600+ colors across 20 brands. Used in the color picker when adding, editing, or copying spools, **and as the single source of truth for resolving hex colors to human-readable names everywhere in the UI** — the Printer tab AMS popup, the inventory list, the print modal filament override cards, the SpoolBuddy kiosk, and auto-provisioned inventory entries all look up display names from this table. If a color name shows up wrong (e.g. "Scarlet Red" instead of "Cherry Pink"), edit the offending entry or use **Sync** to pull the canonical name from FilamentColors.xyz.
 
 | Button | Description |
 |--------|-------------|
@@ -750,6 +750,9 @@ Pre-defined color palettes from filament brands. Ships with 600+ colors across 2
     A hex is not one color in Bambu's range: `#FFFFFF` is **Jade White** in PLA Basic, **Ivory White** in PLA Matte and plain **White** in six more materials, and `#000000` is **Charcoal** in PLA Matte where it is **Black** everywhere else. Where the material is known — an AMS slot knows it from what the printer reports for that slot — the catalog entry for that material wins, so a white Matte spool reads Ivory White rather than the Basic name that shares its hex. Where it is not known, the priority above decides.
 
     A slot with a spool assigned from your inventory is named after that spool instead: it is the roll you told Bambuddy is in there, so its own color name is the better answer than any lookup by hex.
+
+!!! info "When the spool has no name of its own"
+    Most Bambu RFID tags carry no readable color name — some carry an internal code like `A06-D0` instead, which is not unique across material families and is not shown. Spoolman has no color-name field at all, so a Spoolman-backed spool arrives carrying its sub-type in place of one. In both cases the catalog answer for the spool's hex is what you see, which is why a spool whose Color Name field is blank still reads **Candy Red** rather than blank or "Silk+". A name you typed yourself always wins over the catalog; the lookup is the fallback, not an override.
 
 #### Import File Format
 

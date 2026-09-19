@@ -272,7 +272,7 @@ The Inventory page lets you browse your full spool catalog.
 
 ### Search and Filtering
 
-- **Search bar** — real-time search across material, subtype, brand, color name, and notes.
+- **Search bar** — real-time search across material, subtype, brand, color name, and notes. The color name it matches is the one on screen, which for most Bambu spools is resolved from the [Color Catalog](../features/inventory.md#color-catalog) rather than stored on the spool.
 - **Filter pills** — horizontal scrollable row:
     - **All Spools** — shows total count
     - **In AMS** — shows count of spools currently assigned to AMS slots
