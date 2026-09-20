@@ -507,6 +507,7 @@ Add to queue without a schedule - prints start when:
 - Printer is idle
 - Previous prints complete
 - No scheduled prints are pending
+- No maintenance run is pending on the printer, and no scheduled one is close enough for the job to run into it &mdash; see [Order and the print queue](maintenance.md#order-and-the-print-queue) in the Maintenance Tracker
 
 ### Scheduled Prints
 
