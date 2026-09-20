@@ -22,6 +22,7 @@ The maintenance tracker helps you:
 - **Track** when maintenance was last performed
 - **Get notified** when maintenance is due
 - **Log** maintenance history
+- **Run** the printer's calibration for you, by hand, when due, or on a weekday schedule — see [Printer Calibration](#printer-calibration)
 
 ---
 
@@ -43,6 +44,7 @@ Bambuddy includes common maintenance tasks:
 | **Clean Steel Rods** | Every 100 hours | P2S |
 | **Lubricate Linear Rails** | Every 50 hours | A1/H2D |
 | **Clean Linear Rails** | Every 100 hours | A1/H2D |
+| **[Printer Calibration](#printer-calibration)** | Every 100 hours | All printers — Bambuddy runs it for you |
 
 ### Hiding Default Types
 
@@ -151,6 +153,104 @@ Configure when "Due Soon" triggers:
 
 - Default: 80% of interval
 - Example: Clean Build Plate every 25 hours → "Due Soon" at 20 hours
+
+---
+
+## :material-target: Printer Calibration
+
+Since 1.2.6 ([#3127](https://github.com/maziggy/bambuddy/issues/3127)) one maintenance type is more than a reminder. **Printer Calibration** is a task Bambuddy performs itself: it tells the printer to run its own calibration routine &mdash; the bed leveling, vibration compensation and motor noise cancellation you would otherwise start from the touchscreen &mdash; and marks the item performed when the printer reports it finished.
+
+**Printer Calibration** is a default type (every 100 print hours, all printers), so it sits on every printer's card like the other defaults and can be hidden and restored the same way. On the **Settings** tab it carries a **Runs a calibration** badge. It is the only type that can run anything: custom types are reminders only.
+
+### Calibration options
+
+The card lists the routines a run performs. Tick the ones you want; they are sent to the printer as one command.
+
+| Option | Notes |
+|--------|-------|
+| **Bed leveling** | On by default |
+| **Vibration compensation** | On by default |
+| **Motor noise cancellation** | On by default |
+| **Nozzle offset** | Dual-nozzle printers only (H2D, H2D Pro, H2C, X2D). The checkbox is not shown on other models |
+| **High-temperature bed leveling** | |
+| **Micro Lidar** | Lidar calibration of the X1 series |
+| **Nozzle clumping detection** | |
+
+Apart from **Nozzle offset**, every option is offered on every model; the printer ignores the ones its hardware does not have. At least one option must be ticked before a run can be queued &mdash; otherwise Bambuddy refuses with **Select at least one calibration option**. The options are copied onto a run when it is queued, so changing them afterwards does not alter a run that is already waiting.
+
+### Trigger
+
+The **Trigger** dropdown decides when a run is queued:
+
+| Trigger | Queues a run when |
+|---------|-------------------|
+| **Manual** | Only when you click **Run now**. This is the default. |
+| **When due** | The item falls due &mdash; after its interval in print hours or calendar days, using the same calculation as the [due status](#due-status). One run per due period: if that run fails or is cancelled, the item stays due but is not retried by itself. Click **Run now**, or **Reset** once you have calibrated by hand. |
+| **On a schedule** | The chosen time arrives on one of the chosen weekdays. **Weekdays** are chips (Saturday by default) and **Earliest time** is a time picker (06:00 by default). While nothing is queued the card shows **Next run: …**. A slot that arrives while the previous run is still waiting adds nothing: one run per item at a time. |
+
+**Run now** works in every mode. The automatic triggers only fire for an item that is enabled, on a printer that is active. A schedule needs at least one weekday and a time, and both automatic triggers need at least one calibration option ticked &mdash; Bambuddy refuses to save the trigger otherwise.
+
+!!! info "Timezone"
+    The scheduled time is the server's local time, read from the `TZ` environment variable &mdash; the same rule as for [scheduled local backups](backup.md#scheduled-local-backups). Set `TZ` in `docker-compose.yml` (e.g. `TZ=Europe/Berlin`) to match your wall clock; without it, times are UTC.
+
+### Run now
+
+**Run now** queues a run straight away (**Calibration queued**) and leaves the rest to the scheduler; it does not send anything to the printer itself. The button is greyed out while a run is already pending or running for the item, while the item is disabled, and without the `maintenance:update` permission when authentication is enabled.
+
+### While a run waits
+
+A queued run starts on the next scheduler pass on which the printer is free &mdash; connected, idle, and, with **Require plate-clear confirmation** on, with its plate released. Until then the card says why it has not started:
+
+| Card says | Meaning |
+|-----------|---------|
+| **Queued – starts as soon as the printer is idle** | Just queued; the scheduler has not looked at it yet |
+| **Waiting: printer offline** | The printer is not connected, or the command could not be sent |
+| **Waiting: printer busy** | The printer is printing, paused or preparing, or the print queue has claimed it: a job it just dispatched, an upload still in flight, or its post-dispatch hold. Another calibration run on the same printer counts too |
+| **Waiting: plate not released yet** | **Require plate-clear confirmation** is on and the printer is waiting for you to release the plate |
+| **Waiting: AMS drying in progress** | A drying session, manual or scheduled, is holding the printer |
+
+A run waits as long as it takes and never interrupts anything: a print that is already running finishes first, and a print the queue is about to dispatch wins over the calibration. Once the calibration is running, the print queue treats the printer as busy, so prints queued behind it start when it finishes. There is no limit on how long a run can wait.
+
+!!! warning "Keep plate-clear confirmation on if parts can be left on the plate"
+    With **Require plate-clear confirmation** enabled, the run waits until you press **Clear Plate & Start Next** (or acknowledge over the API), so a bed leveling run never starts with a finished print still on the plate &mdash; see [Clear Plate Confirmation](print-queue.md#clear-plate-confirmation). With it disabled, the run starts as soon as the printer reports idle, finished or failed, whatever is still on the plate. Leveling into a part is a crash, so disable the gate only where the plate is cleared automatically.
+
+While the calibration runs the card reads **Calibration running since …**, and the page refreshes every few seconds for as long as any run is pending or running.
+
+### When a run finishes
+
+The printer's own completion event closes the run:
+
+- **Completed** &mdash; a history entry with the note **Automatic calibration** is written and the item's interval is reset, exactly as pressing **Reset** does. The same `bambuddy/maintenance/reset` [MQTT event](mqtt.md#maintenance-events) is published. The card reads **Last run completed …** until the next run.
+- **Failed** &mdash; the card reads **Last run failed …** with the printer's error code. The item is not reset and nothing is retried automatically.
+- **Cancelled** &mdash; see below. The item is not reset.
+
+No notification is sent for a run; check the card, or subscribe to the MQTT event.
+
+A run that is still "running" two hours after it started has lost its completion event &mdash; Bambuddy restarted mid-run with the printer offline since, say. It is closed as failed with **Lost track of the run: no completion was reported**, so the item is never blocked forever.
+
+### Cancelling a run
+
+**Cancel run** on the card withdraws the pending or running run (**Calibration run cancelled**):
+
+- A **pending** run is simply removed; nothing is sent to the printer.
+- A **running** run is stopped on the printer &mdash; but only when the printer is, at that moment, actually on the calibration. If the run has outlived the calibration (a completion missed across a restart, or a command the firmware never acted on) and the printer is by now on somebody's print, Bambuddy closes the run and leaves the printer alone.
+
+Cancelling at the printer's touchscreen works too. The printer reports the calibration as failed and sends its cancel code a few seconds later, so Bambuddy holds the verdict for about 15 seconds and then records **Last run cancelled …** rather than a failure. Aborting the calibration back to idle counts as cancelled as well.
+
+### The printer's own calibration is no longer a print
+
+Whatever starts a calibration &mdash; a maintenance run, the touchscreen or Bambu Studio &mdash; Bambuddy now treats it as the printer's own job, not as a print:
+
+- **No archive**, and no print-started or print-completed notification.
+- **No filament deduction.** A calibration that was cut short used to book a full spool against every loaded AMS slot &mdash; [#3081](https://github.com/maziggy/bambuddy/issues/3081) saw 1 kg deducted from each spool after a bed leveling run was powered off. A calibration consumes nothing and now books nothing.
+- **No plate-clear prompt** afterwards, because it leaves nothing on the plate, and no finish photo.
+- **Not stopped by the [printer kill switch](billing.md#printer-kill-switch)**, which would otherwise cancel the run a schedule had just started.
+
+Only a run Bambuddy queued marks the item performed. A calibration you start from the touchscreen is not tracked: press **Reset** on the card afterwards.
+
+!!! note "What a run does not cover"
+    - **Pressure advance (flow dynamics) calibration** is not part of a maintenance run. The K-profile line is a different printer routine, and a run never closes on it. See [K-Profiles](k-profiles.md).
+    - **The H2 series' vision encoder (motion precision) calibration** is not covered either. A run only waits for the bed leveling / vibration / motor noise routine the options above belong to.
 
 ---
 
