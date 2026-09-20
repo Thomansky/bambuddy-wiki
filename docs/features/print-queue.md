@@ -140,6 +140,17 @@ When multiple AMS spools match the same type and color, the auto-matcher normall
 - The matching priority chain is unchanged (tray_info_idx > exact color > similar color > type-only) — sorting only affects which spool wins within the same tier
 - Disabled by default to preserve existing behavior
 
+### Unidentified spools
+
+A spool inserted into the AMS while the printer is printing is noticed &mdash; the slot shows as occupied &mdash; but its RFID tag is never read: the AMS cannot move filament during a print, and it does not come back to the slot afterwards. The next queued job is then mapped against a slot whose filament is unknown, unless somebody walks over and presses **Re-read RFID** on it first.
+
+Enable **Re-read unidentified AMS spools before starting a job** (Settings → **Workflow** → **Queue & Dispatch** → **Unidentified AMS Spools** card) and the queue does that itself. Right before a job is mapped and started, it asks the AMS to read every occupied slot it has not identified yet, waits for the reads to finish, and only then resolves the mapping &mdash; so the mapping sees what is actually loaded. While the reads run the queue item shows **Reading AMS spools…**; the printer is reserved for that item and nothing else is dispatched to it.
+
+- **Once per job.** A job is asked about at most once, whatever the result. If a slot still cannot be read, the job goes ahead exactly as it would have without the option.
+- **The job starts regardless.** A refused, timed-out or failed read never fails or delays a job beyond the read itself (a handful of seconds per slot, a couple of minutes at most).
+- **Skipped while filament is loaded.** The AMS has to move filament to reach a tag, so nothing is read while a tray is loaded to the extruder; the job starts straight away. This needs the previous print's end G-code to have unloaded the filament back into the AMS, which Bambu's stock profiles do.
+- A slot that is read gets the same pressure-advance profile re-apply the manual **Re-read RFID** button triggers.
+
 ### Plate Selection (Multi-Plate 3MF)
 
 For 3MF files with multiple plates:
