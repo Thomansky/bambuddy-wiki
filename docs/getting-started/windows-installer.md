@@ -232,9 +232,11 @@ This makes the dashboard reachable from other devices on your LAN at
 
 ## :material-lan: Virtual Printer + Network Interfaces
 
-When you add a Virtual Printer, the **Bind IP** dropdown lists every
-network interface on the Windows host that has an IPv4 address. On
-Windows you may see entries you don't see on Linux:
+When you add a Virtual Printer, the **Bind Interface** dropdown lists every
+IPv4 address on the Windows host — one entry per address, not per adapter, so
+a single NIC carrying several addresses offers several bind targets. Extra
+addresses after an adapter's first are marked `[alias]`. On Windows you may
+see entries you don't see on Linux:
 
 - `Ethernet`, `Wi-Fi` — your real LAN adapters
 - `vEthernet (WSL)`, `vEthernet (Default Switch)` — Hyper-V virtual switches
@@ -249,6 +251,24 @@ running inside WSL).
 
 For most users, pick the real LAN adapter that matches the subnet your
 Bambu printer is on.
+
+Each enabled Virtual Printer needs its own address. Add the extra ones to the
+adapter you already use, from an Administrator PowerShell:
+
+```powershell
+New-NetIPAddress -InterfaceAlias "Ethernet0" -IPAddress 192.168.1.101 -PrefixLength 24
+```
+
+They persist across reboots and appear in the dropdown straight away. The
+[Virtual Printer page](../features/virtual-printer.md#dedicated-bind-ip) has
+the full walkthrough.
+
+!!! warning "Don't reach for extra NICs on the same subnet"
+    Adding a second network adapter instead of a second address works only
+    when that adapter is on its own subnet or VLAN. Several adapters of one
+    machine on one subnet hit ARP flux: `route print -4` shows a route per
+    adapter, `netstat -a` shows every port LISTENING on every IP, and other
+    machines can still reach only one of them. Weak host mode does not help.
 
 ---
 

@@ -283,6 +283,41 @@ For production use, run Bambuddy as a system service that starts automatically.
     launchctl load ~/Library/LaunchAgents/com.bambuddy.plist
     ```
 
+    !!! warning "If the printer is unreachable only when launchd starts Bambuddy"
+
+        macOS grants Local Network permission to a code signature, and a process
+        started by launchd is judged on its own rather than inheriting the grant
+        of the Terminal that would otherwise lend it one. Homebrew ships Python
+        unsigned on Intel Macs, which leaves nothing for the grant to attach to:
+        connections to the printer are dropped with no error and no permission
+        prompt. The web interface works, the printer stays disconnected, and the
+        connection diagnostic reports every port unreachable while the subnet
+        check passes.
+
+        The tell is that running the same command from a Terminal connects
+        immediately. To confirm and repair it:
+
+        ```bash
+        # Which interpreter macOS actually judges
+        BASE=$(venv/bin/python3 -c 'import os, sys; print(os.path.realpath(sys._base_executable))')
+        codesign -dv "$BASE"          # "code object is not signed at all" means this is the problem
+        codesign --force --sign - "$BASE"
+        launchctl unload ~/Library/LaunchAgents/com.bambuddy.plist
+        launchctl load ~/Library/LaunchAgents/com.bambuddy.plist
+        ```
+
+        `install.sh` and `install/update_macos.sh` do this for you, and the
+        updater re-checks it on every run because `brew upgrade python` installs
+        a fresh unsigned binary under a new versioned path. Sign only what is
+        unsigned. On Apple Silicon every binary already carries an ad-hoc
+        signature whose identity is a hash of the file itself, so re-signing one
+        rotates that hash and revokes a permission that was working.
+
+        On Apple Silicon the same symptom has a different cause and a different
+        fix: the signature is present but its identity changed with the Python
+        upgrade, so macOS sees a new application. Enable it under **System
+        Settings > Privacy & Security > Local Network**.
+
 ---
 
 ## :material-tune: Configuration

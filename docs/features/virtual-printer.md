@@ -935,10 +935,21 @@ volumes:
 4. Click **Add Virtual Printer**
 5. Set a **Name** for this virtual printer
 6. Choose your **Mode**: Immediate, Review, Print Queue, or Proxy
-7. Choose the **Printer Model** to emulate
-8. Set an **Access Code** (exactly 8 characters) — not needed for Proxy mode
-9. Enter a **Bind IP** — a dedicated IP address for this virtual printer
-10. Click **Create**, then toggle it to **Enabled**
+7. For Proxy mode only, choose the **Target Printer**
+8. Click **Create**
+
+Those are the only fields in the dialog. Everything else is configured on the
+virtual printer's own card, which appears in the list underneath:
+
+9. Choose the **Printer Model** to emulate
+10. Set an **Access Code** (exactly 8 characters) — not needed for Proxy mode
+11. Pick a **Bind Interface** — the dedicated IP address this virtual printer
+    listens on. The dropdown lists one entry **per IP address**, not per
+    adapter, so a single network card carrying several addresses gives you
+    several choices. See [Dedicated Bind IP](#dedicated-bind-ip) below for
+    how to add those addresses.
+12. Toggle the card to **Enabled** — a virtual printer with no bind IP will
+    not start
 
 You can create multiple virtual printers, each with its own mode, model, and bind IP. They appear as separate printers in your slicer.
 
@@ -1089,6 +1100,56 @@ You add these extra IPs as **interface aliases** (secondary addresses) on your n
 
         !!! tip "Find your connection name"
             Run `nmcli con show` to see your connection names. Common names: `"Wired connection 1"`, `"eno1"`, `"enp0s3"`.
+
+=== "Windows (Native Installer)"
+
+    !!! note "Bambuddy 1.2.6 or newer"
+        Older builds listed one entry per network adapter, so extra addresses
+        on the same adapter were invisible to the Bind Interface dropdown.
+
+    Open an **Administrator** PowerShell. Find the adapter name first:
+
+    ```powershell
+    Get-NetIPAddress -AddressFamily IPv4 | Select-Object InterfaceAlias, IPAddress, PrefixLength
+    # Example output: Ethernet0   192.168.1.100   24
+    ```
+
+    Add the extra addresses to that same adapter:
+
+    ```powershell
+    New-NetIPAddress -InterfaceAlias "Ethernet0" -IPAddress 192.168.1.101 -PrefixLength 24
+    New-NetIPAddress -InterfaceAlias "Ethernet0" -IPAddress 192.168.1.102 -PrefixLength 24
+    ```
+
+    Verify — every address should report `AddressState: Preferred`:
+
+    ```powershell
+    Get-NetIPAddress -InterfaceAlias "Ethernet0" -AddressFamily IPv4
+    ```
+
+    These survive a reboot with no further step. To remove one again:
+
+    ```powershell
+    Remove-NetIPAddress -IPAddress 192.168.1.101 -Confirm:$false
+    ```
+
+    !!! warning "Extra network adapters are not a substitute"
+        Giving each virtual printer its own NIC works **only if each NIC sits
+        on its own subnet / VLAN**. Several adapters of one machine on a
+        single subnet is the classic ARP flux case: the host answers for all
+        of them from whichever adapter it likes, and other machines end up
+        able to reach only one address. From inside Windows everything looks
+        correct — `route print -4` shows an on-link route per adapter and
+        `netstat -a` shows every virtual-printer port LISTENING on every IP —
+        while ping and every port time out from anywhere else on the LAN.
+        Enabling weak host (`weakhostreceive` / `weakhostsend`) does not fix
+        it. Add extra addresses to the one adapter instead.
+
+    !!! warning "Loopback adapters do not work"
+        A Microsoft KM-TEST Loopback Adapter holding one of the spare IPs has
+        no link to the physical NIC or the switch, so nothing outside the
+        machine can ARP for that address. Windows shows it bound and
+        `Preferred` while the slicer cannot reach it at all.
 
 === "Unraid"
 
