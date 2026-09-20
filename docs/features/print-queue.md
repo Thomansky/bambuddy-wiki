@@ -149,6 +149,7 @@ Enable **Re-read unidentified AMS spools before starting a job** (Settings → *
 - **Once per job.** A job is asked about at most once, whatever the result. If a slot still cannot be read, the job goes ahead exactly as it would have without the option.
 - **The job starts regardless.** A refused, timed-out or failed read never fails or delays a job beyond the read itself (a handful of seconds per slot, a couple of minutes at most).
 - **Skipped while filament is loaded.** The AMS has to move filament to reach a tag, so nothing is read while a tray is loaded to the extruder; the job starts straight away. This needs the previous print's end G-code to have unloaded the filament back into the AMS, which Bambu's stock profiles do.
+- **"Any &lt;model&gt;" jobs.** Printer matching only counts spools the AMS has identified, so a printer whose only matching spool is an unidentified one would normally be passed over as missing that filament. With the option on, the queue reads the unidentified slots on every idle printer of the model it passed over, then matches again against what the AMS found. The job is not pinned to any of those printers while the reads run.
 - A slot that is read gets the same pressure-advance profile re-apply the manual **Re-read RFID** button triggers.
 
 ### Plate Selection (Multi-Plate 3MF)
