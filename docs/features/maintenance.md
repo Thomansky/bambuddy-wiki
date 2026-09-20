@@ -181,7 +181,7 @@ Apart from **Nozzle offset**, every option is offered on every model; the printe
 
 ### Only when the bed is cold
 
-Bed leveling and the vision encoder calibration are best run on a cold, thermally settled machine, and a run that falls due right after a print would otherwise start on a warm bed. The row **Only when the bed is below … °C** under the options adds that as a start condition: tick it (30 °C to begin with; anything above 0 up to 120 °C, one decimal at most) and a queued run also waits until the printer reports a bed temperature below the value. It is the last thing checked, after the printer is idle and the plate has been released, and it is re-checked on every scheduler pass, so the run starts on the first pass after the bed has cooled. Unlike the options, the condition is read from the card at that moment, not copied onto the run: raising the value releases a run that is already waiting. Bambuddy reads the same bed temperature the [Bed Cooled notification](notifications.md#print-events) uses; until the printer has reported one after connecting, the run waits rather than guesses.
+Bed leveling and the vision encoder calibration are best run on a cold, thermally settled machine, and a run that falls due right after a print would otherwise start on a warm bed. The row **Only when the bed is below … °C** under the options adds that as a start condition: tick it (30 °C to begin with; anything above 0 up to 120 °C, one decimal at most) and a queued run also waits until the printer reports a bed temperature below the value. It is the last thing checked, after the printer is idle and the plate has been released, and it is re-checked on every scheduler pass, so the run starts on the first pass after the bed has cooled. Unlike the options, the condition is read from the card at that moment, not copied onto the run: raising the value releases a run that is already waiting. Bambuddy reads the same bed temperature the [Bed Cooled notification](notifications.md#print-events) uses; until the printer has reported one, the run waits rather than guesses.
 
 ### Trigger
 
@@ -214,7 +214,7 @@ A queued run starts on the next scheduler pass on which the printer is free &mda
 | **Waiting: plate not released yet** | **Require plate-clear confirmation** is on and the printer is waiting for you to release the plate |
 | **Waiting: AMS drying in progress** | A drying session, manual or scheduled, is holding the printer |
 | **Waiting: bed still warm (34 °C)** | [Only when the bed is cold](#only-when-the-bed-is-cold) is ticked and the bed, at the temperature shown, is not yet below the value |
-| **Waiting: bed temperature unknown** | The condition is ticked and the printer has not reported a bed temperature since it connected |
+| **Waiting: bed temperature unknown** | The condition is ticked and Bambuddy has no bed temperature for the printer yet &mdash; it has not received a status report since Bambuddy started (the last reported value is kept across a short reconnect) |
 
 A run waits as long as it takes and never interrupts anything: a print that is already running finishes first, and a print the queue is about to dispatch wins over the calibration. Once the calibration is running, the print queue treats the printer as busy, so prints queued behind it start when it finishes. There is no limit on how long a run can wait.
 
