@@ -179,6 +179,10 @@ The card lists the routines a run performs. Tick the ones you want; they are sen
 
 Apart from **Nozzle offset**, every option is offered on every model; the printer ignores the ones its hardware does not have. At least one option must be ticked before a run can be queued &mdash; otherwise Bambuddy refuses with **Select at least one calibration option**. The options are copied onto a run when it is queued, so changing them afterwards does not alter a run that is already waiting.
 
+### Only when the bed is cold
+
+Bed leveling and the vision encoder calibration are best run on a cold, thermally settled machine, and a run that falls due right after a print would otherwise start on a warm bed. The row **Only when the bed is below … °C** under the options adds that as a start condition: tick it (30 °C to begin with; anything above 0 up to 120 °C, one decimal at most) and a queued run also waits until the printer reports a bed temperature below the value. It is the last thing checked, after the printer is idle and the plate has been released, and it is re-checked on every scheduler pass, so the run starts on the first pass after the bed has cooled. Unlike the options, the condition is read from the card at that moment, not copied onto the run: raising the value releases a run that is already waiting. Bambuddy reads the same bed temperature the [Bed Cooled notification](notifications.md#print-events) uses; until the printer has reported one after connecting, the run waits rather than guesses.
+
 ### Trigger
 
 The **Trigger** dropdown decides when a run is queued:
@@ -209,6 +213,8 @@ A queued run starts on the next scheduler pass on which the printer is free &mda
 | **Waiting: printer busy** | The printer is printing, paused or preparing, or the print queue has claimed it: a job it just dispatched, an upload still in flight, or its post-dispatch hold. Another calibration run on the same printer counts too |
 | **Waiting: plate not released yet** | **Require plate-clear confirmation** is on and the printer is waiting for you to release the plate |
 | **Waiting: AMS drying in progress** | A drying session, manual or scheduled, is holding the printer |
+| **Waiting: bed still warm (34 °C)** | [Only when the bed is cold](#only-when-the-bed-is-cold) is ticked and the bed, at the temperature shown, is not yet below the value |
+| **Waiting: bed temperature unknown** | The condition is ticked and the printer has not reported a bed temperature since it connected |
 
 A run waits as long as it takes and never interrupts anything: a print that is already running finishes first, and a print the queue is about to dispatch wins over the calibration. Once the calibration is running, the print queue treats the printer as busy, so prints queued behind it start when it finishes. There is no limit on how long a run can wait.
 
@@ -261,7 +267,7 @@ The H2 series (H2S, H2D, H2D Pro, H2C) has a vision encoder that Bambu Lab recom
 
 Like every calendar-day item it counts as **due** until it has been performed once, so right after the update every H2 printer shows it in red. Its trigger starts on **Manual**, so nothing runs on its own: press **Run now** when the printer is free, or **Reset** if you calibrated from the touchscreen recently. Switching the trigger to **When due** queues a run straight away.
 
-The card is the same as the [Printer Calibration](#printer-calibration) card without the option row: the vision encoder routine takes no options, so there is nothing to tick. Everything else &mdash; the **Trigger** dropdown with its three modes, the weekday chips and time, **Run now**, **Cancel run**, the waiting reasons, the status line and the history entry with the note **Automatic calibration** &mdash; works exactly as described above, and the two items on one printer never run at the same time: a run waits with **Waiting: printer busy** while the other calibration is on the printer.
+The card is the same as the [Printer Calibration](#printer-calibration) card without the option row: the vision encoder routine takes no options, so there is nothing to tick. Everything else &mdash; the [cold-bed condition](#only-when-the-bed-is-cold), the **Trigger** dropdown with its three modes, the weekday chips and time, **Run now**, **Cancel run**, the waiting reasons, the status line and the history entry with the note **Automatic calibration** &mdash; works exactly as described above, and the two items on one printer never run at the same time: a run waits with **Waiting: printer busy** while the other calibration is on the printer.
 
 !!! tip "If you already had a reminder for it"
     Many H2 owners set up a custom "vision encoder" reminder for this before 1.2.6. The new default item replaces it: it is on the same 7-day cadence and it does the calibration rather than only reminding you. Once you are happy with the new card, delete the custom type on the **Settings** tab (or unassign it from the printer) so the two do not nag in parallel.
