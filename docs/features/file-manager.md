@@ -321,9 +321,10 @@ During extraction:
 
 ---
 
-## :material-cube-outline: STL Thumbnail Generation
+## :material-cube-outline: STL and PDF Thumbnail Generation
 
-Generate preview thumbnails for STL files to make them easier to identify in your library.
+Bambuddy renders grid thumbnails for STL models and PDF documents itself, so
+both are easy to identify in your library without opening them.
 
 ### Automatic Generation on Upload
 
@@ -336,15 +337,18 @@ When uploading STL files:
 
 Thumbnails are generated automatically during the upload process.
 
-### Generate for Existing STL Files
+PDF files get their first page as the thumbnail on every upload; the checkbox
+only governs STL, because a mesh render takes seconds and a PDF page does not.
 
-For STL files already in your library:
+### Generate for Existing Files
+
+For STL and PDF files already in your library:
 
 1. Click **Generate Thumbnails** button in the toolbar
 2. Select which files to process:
-    - **All missing** - Only STL files without thumbnails
+    - **All missing** - Only STL and PDF files without thumbnails
     - **Selected files** - Only checked files
-    - **Entire folder** - All STL files in current folder
+    - **Entire folder** - All STL and PDF files in current folder
 3. Click **Generate**
 4. Thumbnails appear as they're created
 
@@ -352,7 +356,7 @@ For STL files already in your library:
 
 Generate a thumbnail for one file:
 
-1. Find the STL file
+1. Find the STL or PDF file
 2. Click the three-dot menu (:material-dots-vertical:)
 3. Select **Generate Thumbnail**
 4. The thumbnail updates automatically when done
@@ -365,15 +369,21 @@ When extracting ZIP files containing STL files:
 2. Check **Generate thumbnails for STL files**
 3. Thumbnails are created for all STL files in the archive
 
+PDF files inside the archive are thumbnailed as well, checkbox or not.
+
 ### Technical Details
 
 | Feature | Details |
 |---------|---------|
-| **Rendering** | Lit 3D isometric view using trimesh and matplotlib |
+| **STL rendering** | Lit 3D isometric view using trimesh and matplotlib |
 | **Shading** | A single directional light offset from the camera, so adjacent faces catch it differently and the model shows relief rather than a flat outline |
 | **Color** | Shades of Bambu green (#00AE42) on a dark background |
+| **PDF rendering** | First page rasterised with pypdfium2 (PDFium), longest edge 256 px, white page background |
 | **Format** | PNG (RGBA, fully opaque) |
 | **Size** | Optimized for thumbnail display |
+
+!!! note "PDF renderer availability"
+    `pypdfium2` ships PDFium inside the wheel for Linux (x86_64 and arm64), macOS and Windows. On a platform without a wheel Bambuddy skips the server render and falls back to the browser: the first time someone opens the PDF preview, that render becomes the thumbnail.
 
 !!! tip "Large STL Files"
     Very complex STL files (100k+ vertices) may take longer to process. The generator handles these gracefully.
@@ -404,15 +414,37 @@ without downloading them ([#2976](https://github.com/maziggy/bambuddy/issues/297
 Previewing needs the same `library:read_own` / `library:read_all` permission
 as downloading the file.
 
+### Fullscreen and zoom
+
+Every preview has a fullscreen button in its header, and a **double-click on
+the preview area** toggles fullscreen too. `Esc` leaves fullscreen; press it
+again to close the preview. Where the browser does not allow fullscreen for
+page elements (iPhone Safari, some embedded views) the preview fills the
+browser window instead.
+
+- **PDF**: `Ctrl`/`⌘` + mouse wheel and trackpad pinch zoom around the
+  pointer; on a touch screen, pinch with two fingers. The plain wheel zooms
+  while the whole page is visible and scrolls once it is not. Keyboard:
+  `+` / `-` step the zoom, `0` resets it. The zoom buttons remain.
+- **3D viewer (STL, STEP)**: mouse wheel or pinch to zoom, drag to orbit,
+  right-drag to pan, in the window and in fullscreen alike. The zoom range is
+  bounded so the model can never be dollied out of view; **Reset** returns to
+  the framed view.
+
 ### Thumbnails
 
-These formats are rendered **in your browser** — the server has no CAD kernel
-or PDF rasteriser. The first time someone opens a preview, that first render
-is stored as the file's grid thumbnail (a STEP model's 3D view, a PDF's first
-page, a mini table for spreadsheets). Until then the grid shows a per-type
-icon. Persisting the thumbnail requires `library:update_own` /
-`library:update_all`; users without it still get the full preview, only the
-thumbnail is skipped.
+- **PDF**: the first page is rendered **on the server** when the file is
+  uploaded, extracted from a ZIP or found in an external folder scan, and
+  through the toolbar's **Generate Thumbnails** button — nobody has to open
+  the file. See [STL and PDF Thumbnail Generation](#stl-and-pdf-thumbnail-generation).
+- **STEP and spreadsheets** are rendered **in your browser** — the server has
+  no CAD kernel. The first time someone opens a preview, that first render is
+  stored as the file's grid thumbnail (a STEP model's 3D view, a mini table for
+  spreadsheets). Until then the grid shows a per-type icon. Persisting the
+  thumbnail requires `library:update_own` / `library:update_all`; users
+  without it still get the full preview, only the thumbnail is skipped. The
+  same browser fallback covers PDFs on a server without the PDF renderer.
+- A thumbnail that already exists is never replaced by a preview render.
 
 ### Limits & fallback behaviour
 
@@ -686,7 +718,7 @@ External folders are indexed on creation. To pick up new or removed files:
 3. New files are added, deleted files are removed from the index
 
 !!! info "Files Are Not Copied"
-    Bambuddy indexes external files into its database but reads them directly from the original path. No disk space is used for file copies. Thumbnails for 3MF, STL, and gcode files are generated and stored locally.
+    Bambuddy indexes external files into its database but reads them directly from the original path. No disk space is used for file copies. Thumbnails for 3MF, STL, PDF, and gcode files are generated and stored locally.
 
 ### Read-Only Protection
 
