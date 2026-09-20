@@ -231,7 +231,7 @@ The printer's own completion event closes the run:
 - **Failed** &mdash; the card reads **Last run failed …** with the printer's error code. The item is not reset and nothing is retried automatically.
 - **Cancelled** &mdash; see below. The item is not reset.
 
-The outcome can also reach your notification providers through the **Maintenance Run Finished** event, which is off by default &mdash; see [Notifications](#notifications) below. Cancelling from the card sends nothing: you pressed the button.
+The outcome can also reach your notification providers through the **Maintenance Run Finished** event, which is off by default &mdash; see [Notifications](#notifications) below. Every run that was queued reports exactly once, whichever way it ended &mdash; a cancel from the card included, so a shared channel sees it too.
 
 A run that is still "running" two hours after it started has lost its completion event &mdash; Bambuddy restarted mid-run with the printer offline since, say. It is closed as failed with **Lost track of the run: no completion was reported**, so the item is never blocked forever.
 
@@ -286,7 +286,7 @@ Get notified when maintenance is due:
 
 ### Maintenance Run Finished
 
-Since 1.2.6 a second event, **Maintenance Run Finished**, reports how a [calibration run](#printer-calibration) Bambuddy queued ended: completed, failed (with the error in the message, whether the printer's code or a run Bambuddy lost track of) or cancelled at the printer's touchscreen. It is off on every provider, including the ones that existed before the event, so nothing new arrives after the update until you switch it on under **Printer Status** in the provider's event settings. The message template is **Maintenance Run Finished** on the **Templates** tab; its variables are listed with the [other events](notifications.md#variables).
+Since 1.2.6 a second event, **Maintenance Run Finished**, reports how a [calibration run](#printer-calibration) Bambuddy queued ended: completed, failed (with the error in the message, whether the printer's code or a run Bambuddy lost track of) or cancelled, from the card or at the printer's touchscreen. It is off on every provider, including the ones that existed before the event, so nothing new arrives after the update until you switch it on under **Printer Status** in the provider's event settings. The message template is **Maintenance Run Finished** on the **Templates** tab; its variables are listed with the [other events](notifications.md#variables).
 
 ### Muting one item
 
