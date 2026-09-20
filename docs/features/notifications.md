@@ -381,6 +381,7 @@ When a camera snapshot is available (e.g. First Layer Complete, Print Started, P
 | **Printer Sensor Alert** | A [Home Assistant sensor](sensors.md#printer-sensors) bound to a printer entered its alert state — an enclosure door opened, a chamber ran hot. Fires on the transition in, not repeatedly. Off by default. Storage-location sensors have their own event, below. |
 | **Low Filament** | Filament running low |
 | **Maintenance Due** | Scheduled maintenance is due |
+| **Maintenance Run Finished** | A calibration run Bambuddy queued from the [maintenance page](maintenance.md#printer-calibration) completed, failed or was cancelled at the printer. Off by default, also on providers that predate the event. Items muted with the bell on their card send nothing. |
 
 ### AMS Events
 
@@ -545,6 +546,13 @@ Insert dynamic content with `{variable}`:
 - `{printer}` - Printer name
 - `{missing_slots}` - Comma-separated slot labels (e.g., "A1, A3")
 - `{missing_slot_details}` - Per-slot breakdown with expected profile (e.g., "- A1: PLA Basic")
+
+**Maintenance Run Finished:**
+
+- `{printer}` - Printer name
+- `{item}` - The maintenance item (e.g. "Printer Calibration")
+- `{result}` - `Completed`, `Failed` or `Cancelled`
+- `{error}` - The failure message; empty for a completed or cancelled run
 
 **AMS Events:**
 

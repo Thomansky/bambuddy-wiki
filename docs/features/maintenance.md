@@ -193,7 +193,7 @@ The **Trigger** dropdown decides when a run is queued:
 | **When due** | The item falls due &mdash; after its interval in print hours or calendar days, using the same calculation as the [due status](#due-status). One run per due period: if that run fails or is cancelled, the item stays due but is not retried by itself. Click **Run now**, or **Reset** once you have calibrated by hand. |
 | **On a schedule** | The chosen time arrives on one of the chosen weekdays. **Weekdays** are chips (Saturday by default) and **Earliest time** is a time picker (06:00 by default). While nothing is queued the card shows **Next run: …**. A slot that arrives while the previous run is still waiting adds nothing: one run per item at a time. |
 
-**Run now** works in every mode. The automatic triggers only fire for an item that is enabled, on a printer that is active. A schedule needs at least one weekday and a time, and both automatic triggers need at least one calibration option ticked &mdash; Bambuddy refuses to save the trigger otherwise.
+The two automatic options say in brackets what actually gates the start &mdash; *(only once the plate has been released)* while **Require plate-clear confirmation** is on, *(once the printer is idle)* otherwise &mdash; because a queued run, whatever queued it, starts only on a printer that passes [that check](#while-a-run-waits). **Run now** works in every mode. The automatic triggers only fire for an item that is enabled, on a printer that is active. A schedule needs at least one weekday and a time, and both automatic triggers need at least one calibration option ticked &mdash; Bambuddy refuses to save the trigger otherwise.
 
 !!! info "Timezone"
     The scheduled time is the server's local time, read from the `TZ` environment variable &mdash; the same rule as for [scheduled local backups](backup.md#scheduled-local-backups). Set `TZ` in `docker-compose.yml` (e.g. `TZ=Europe/Berlin`) to match your wall clock; without it, times are UTC.
@@ -231,7 +231,7 @@ The printer's own completion event closes the run:
 - **Failed** &mdash; the card reads **Last run failed …** with the printer's error code. The item is not reset and nothing is retried automatically.
 - **Cancelled** &mdash; see below. The item is not reset.
 
-No notification is sent for a run; check the card, or subscribe to the MQTT event.
+The outcome can also reach your notification providers through the **Maintenance Run Finished** event, which is off by default &mdash; see [Notifications](#notifications) below. Cancelling from the card sends nothing: you pressed the button.
 
 A run that is still "running" two hours after it started has lost its completion event &mdash; Bambuddy restarted mid-run with the printer offline since, say. It is closed as failed with **Lost track of the run: no completion was reported**, so the item is never blocked forever.
 
@@ -283,6 +283,14 @@ Get notified when maintenance is due:
 1. Go to **Settings** > **Notifications**
 2. Enable **Maintenance Due** event
 3. Configure your notification provider
+
+### Maintenance Run Finished
+
+Since 1.2.6 a second event, **Maintenance Run Finished**, reports how a [calibration run](#printer-calibration) Bambuddy queued ended: completed, failed (with the error in the message, whether the printer's code or a run Bambuddy lost track of) or cancelled at the printer's touchscreen. It is off on every provider, including the ones that existed before the event, so nothing new arrives after the update until you switch it on under **Printer Status** in the provider's event settings. The message template is **Maintenance Run Finished** on the **Templates** tab; its variables are listed with the [other events](notifications.md#variables).
+
+### Muting one item
+
+Every card has a bell next to the item's name. Click it to mute the item: a muted item (slashed bell) is left out of the **Maintenance Due** reminder and sends no **Maintenance Run Finished** message, while its due status, the badge counts, its interval and its automatic trigger carry on unchanged. Click the bell again to unmute. The bell needs the same `maintenance:update` permission as the item's other controls.
 
 ### Notification Timing
 
