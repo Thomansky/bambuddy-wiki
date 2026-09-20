@@ -22,7 +22,7 @@ The maintenance tracker helps you:
 - **Track** when maintenance was last performed
 - **Get notified** when maintenance is due
 - **Log** maintenance history
-- **Run** the printer's calibration for you, by hand, when due, or on a weekday schedule — see [Printer Calibration](#printer-calibration)
+- **Run** the printer's calibrations for you, by hand, when due, or on a weekday schedule — see [Printer Calibration](#printer-calibration) and [Vision Encoder Calibration](#vision-encoder-calibration)
 
 ---
 
@@ -45,6 +45,7 @@ Bambuddy includes common maintenance tasks:
 | **Lubricate Linear Rails** | Every 50 hours | A1/H2D |
 | **Clean Linear Rails** | Every 100 hours | A1/H2D |
 | **[Printer Calibration](#printer-calibration)** | Every 100 hours | All printers — Bambuddy runs it for you |
+| **[Vision Encoder Calibration](#vision-encoder-calibration)** | Every 7 days | H2S/H2D/H2D Pro/H2C — Bambuddy runs it for you |
 
 ### Hiding Default Types
 
@@ -158,9 +159,9 @@ Configure when "Due Soon" triggers:
 
 ## :material-target: Printer Calibration
 
-Since 1.2.6 ([#3127](https://github.com/maziggy/bambuddy/issues/3127)) one maintenance type is more than a reminder. **Printer Calibration** is a task Bambuddy performs itself: it tells the printer to run its own calibration routine &mdash; the bed leveling, vibration compensation and motor noise cancellation you would otherwise start from the touchscreen &mdash; and marks the item performed when the printer reports it finished.
+Since 1.2.6 ([#3127](https://github.com/maziggy/bambuddy/issues/3127)) two maintenance types are more than a reminder. **Printer Calibration** is a task Bambuddy performs itself: it tells the printer to run its own calibration routine &mdash; the bed leveling, vibration compensation and motor noise cancellation you would otherwise start from the touchscreen &mdash; and marks the item performed when the printer reports it finished. The second one, [Vision Encoder Calibration](#vision-encoder-calibration), works the same way on the H2 series and is described below.
 
-**Printer Calibration** is a default type (every 100 print hours, all printers), so it sits on every printer's card like the other defaults and can be hidden and restored the same way. On the **Settings** tab it carries a **Runs a calibration** badge. It is the only type that can run anything: custom types are reminders only.
+**Printer Calibration** is a default type (every 100 print hours, all printers), so it sits on every printer's card like the other defaults and can be hidden and restored the same way. On the **Settings** tab it carries a **Runs a calibration** badge. Only these two types can run anything: custom types are reminders only.
 
 ### Calibration options
 
@@ -250,7 +251,20 @@ Only a run Bambuddy queued marks the item performed. A calibration you start fro
 
 !!! note "What a run does not cover"
     - **Pressure advance (flow dynamics) calibration** is not part of a maintenance run. The K-profile line is a different printer routine, and a run never closes on it. See [K-Profiles](k-profiles.md).
-    - **The H2 series' vision encoder (motion precision) calibration** is not covered either. A run only waits for the bed leveling / vibration / motor noise routine the options above belong to.
+    - **The vision encoder calibration** is its own item, described next. A Printer Calibration run only waits for the bed leveling / vibration / motor noise routine the options above belong to, and a Vision Encoder Calibration run only for the vision encoder routine: neither closes on the other's job.
+
+---
+
+## :material-eye-check: Vision Encoder Calibration
+
+The H2 series (H2S, H2D, H2D Pro, H2C) has a vision encoder that Bambu Lab recommends recalibrating regularly &mdash; the **Motion precision** calibration on the printer's **Calibration** screen. Since 1.2.6 it is the second task Bambuddy can perform itself: **Vision Encoder Calibration** is a default type, every **7 days**, that only appears on the H2-series printers. Other models never get the item; an H2D added later gets it automatically, like the other defaults.
+
+The card is the same as the [Printer Calibration](#printer-calibration) card without the option row: the vision encoder routine takes no options, so there is nothing to tick. Everything else &mdash; the **Trigger** dropdown with its three modes, the weekday chips and time, **Run now**, **Cancel run**, the waiting reasons, the status line and the history entry with the note **Automatic calibration** &mdash; works exactly as described above, and the two items on one printer never run at the same time: a run waits with **Waiting: printer busy** while the other calibration is on the printer.
+
+!!! tip "If you already had a reminder for it"
+    Many H2 owners set up a custom "vision encoder" reminder for this before 1.2.6. The new default item replaces it: it is on the same 7-day cadence and it does the calibration rather than only reminding you. Once you are happy with the new card, delete the custom type on the **Settings** tab (or unassign it from the printer) so the two do not nag in parallel.
+
+Under the hood the run starts the printer's own `calibrate_motion_precision` routine; the printer reports it like any other of its jobs, so it is [not treated as a print](#the-printers-own-calibration-is-no-longer-a-print) either &mdash; no archive, no filament deduction, no plate-clear prompt, no cover lookups. Cancelling from the touchscreen is recognised the same way as for Printer Calibration. Should the item ever end up on a printer without a vision encoder (an assignment made by hand, say), the run is refused with **Vision encoder calibration needs an H2-series printer** instead of sending the printer a file it does not have.
 
 ---
 
