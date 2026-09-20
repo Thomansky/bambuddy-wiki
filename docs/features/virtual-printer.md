@@ -938,8 +938,8 @@ volumes:
 7. For Proxy mode only, choose the **Target Printer**
 8. Click **Create**
 
-Those are the only fields in the dialog. Everything else is configured on the
-virtual printer's own card, which appears in the list underneath:
+    Those are the only fields in the dialog. Everything else is configured on
+    the virtual printer's own card, which appears in the list underneath.
 
 9. Choose the **Printer Model** to emulate
 10. Set an **Access Code** (exactly 8 characters) — not needed for Proxy mode

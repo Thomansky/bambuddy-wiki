@@ -975,6 +975,32 @@ These errors mean the file was sliced for a different nozzle diameter than the o
 
 ---
 
+## :material-tray-full: AMS & Filament Issues
+
+### AMS slot shows my custom filament, the printer shows Generic { #custom-filament-generic }
+
+**Symptoms:** You assign a custom filament preset to an AMS slot with **Configure Slot**. Bambuddy's slot card shows the custom name correctly, but the printer's own screen and Bambu Studio's Device tab both show a generic filament &mdash; *Generic PLA*, *Generic ABS* &mdash; instead.
+
+**Background:**
+
+The three surfaces are not reading the same thing. Bambuddy shows the preset you picked, stored next to the slot. The printer and the slicer show what the printer resolved from the slot's eight-character *filament ID*. Two things stop a custom preset reaching that field as itself:
+
+1. **The preset has no filament ID of its own.** A preset that only overrides fields of a generic base has none, and neither does an OrcaSlicer preset synced to Bambu Cloud. There is nothing custom to send, so the slot stays on a filament ID that does resolve &mdash; and the printer names *that* filament.
+2. **The printer has never fetched your filament list from Bambu Cloud.** Developer Mode is LAN-only by Bambu's design, so a printer that has never been cloud-connected holds no custom-filament data to resolve a name against.
+
+**Solutions:**
+
+1. **Work out which of the two it is.** Open the preset in Bambu Studio. Created as a genuinely new filament? It has its own ID, so you are in case 2. Only editing a generic base? Case 1 &mdash; there is nothing custom to send, and no setting will change that.
+
+2. **For case 2, let the printer cache the preset once.** Put the printer in cloud mode, open its filament settings screen so it pulls your presets down, then switch back to LAN Only + Developer Mode. See [Why the printer may still show a generic filament](../features/ams.md#custom-preset-display).
+
+3. **Update to 1.2.6b1 or later.** Before that release the full cloud preset ID was sent into the eight-character field, so it arrived truncated: the slot pointed at nothing resolvable and lost its calibration entry too.
+
+!!! info "Bambuddy is not showing a stale value"
+    The slot card deliberately shows the assignment Bambuddy stored rather than reading the name back from the printer, because a custom filament ID is not resolvable through the printer's public filament info. A mismatch here is the printer's view being less specific, not Bambuddy's being out of date.
+
+---
+
 ## :material-folder-lock: Backup Issues
 
 ### Backups fail with "Read-only file system" { #backup-read-only-filesystem }

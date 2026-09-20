@@ -98,7 +98,7 @@ For **multi-color** prints, the per-plate filament pre-pick benefits from Orca C
 
 ## :material-printer-3d-nozzle: AMS slot assignment
 
-The **Configure AMS Slot** modal (both from the printer card and from SpoolBuddy) treats Orca profiles like local imports for the printer-firmware side: Bambu's firmware can't resolve Orca's UUID profile IDs, so Bambuddy derives a generic Bambu filament_id from the parsed material type (PLA → GFL99, PETG → GFG99, ABS → GFB99, etc.) and uses that for the slot's `tray_info_idx`. The slot mapping record is persisted with `preset_source='orca_cloud'` so Bambuddy can display the right profile name on hover and surface the right one on subsequent opens.
+The **Configure AMS Slot** modal (both from the printer card and from SpoolBuddy) cannot send Orca's own profile ID to the printer — it is a 36-character UUID and the printer's filament field holds eight characters. Bambuddy instead reads the profile's own `filament_id` out of its slicer JSON, which is the same eight-character `P…` the printer stores for any custom filament, and uses that for the slot's `tray_info_idx`. Profiles that carry no `filament_id` of their own fall back to the generic Bambu ID for the parsed material type (PLA → GFL99, PETG → GFG99, ABS → GFB99, etc.), which is why such a slot reads as *Generic* on the printer — see [Why the printer may still show a generic filament](ams.md#custom-preset-display). The slot mapping record is persisted with `preset_source='orca_cloud'` so Bambuddy can display the right profile name on hover and surface the right one on subsequent opens.
 
 ---
 

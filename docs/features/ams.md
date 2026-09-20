@@ -103,7 +103,33 @@ Manually configure AMS slots for third-party or generic filaments. This tells th
 - Live preview of selected color
 
 !!! tip "User Presets"
-    User presets that inherit from Bambu presets (e.g., "# Overture Matte PLA @BBL H2D") are fully supported. Bambuddy automatically derives the correct filament ID from the preset's base configuration.
+    Presets you made yourself &mdash; in Bambu Studio, in OrcaSlicer, or imported locally &mdash; are offered alongside Bambu's own. Bambuddy sends the preset's own filament ID when it has one, and keeps the slot on a resolvable ID when it hasn't. What that means on the printer's screen is explained just below.
+
+#### Why the Printer May Still Show a Generic Filament { #custom-preset-display }
+
+Bambuddy's slot card, the printer's own screen and Bambu Studio's Device tab are not answering the same question. Bambuddy shows the preset **you picked**, which it stores next to the slot. The printer and the slicer show whatever the **printer** could resolve from the slot's *filament ID* &mdash; an eight-character field that is the one thing a filament choice travels in.
+
+So the three can legitimately disagree. A slot that reads as your custom preset in Bambuddy while both the LCD and Bambu Studio say *Generic PLA* is almost always one of the two cases below, not a setting that failed to arrive.
+
+**1. The preset has no filament ID of its own.**
+
+A custom preset only becomes a filament in its own right when it carries its own ID &mdash; a `P` followed by seven hex characters. Bambu Studio mints one when you create a genuinely new filament. It does **not** when the preset merely overrides a few fields of a generic base. An OrcaSlicer preset synced to *Bambu* Cloud has no such field at all; one synced to [Orca Cloud](orca-cloud-profiles.md) usually carries one, and Bambuddy reads it from there.
+
+With no ID of its own, there is nothing custom to send. Bambuddy leaves the slot on an ID that does resolve &mdash; the one the slot already had, or the generic for that material &mdash; so the printer's calibration table and the slicer's filament matching keep working. The name they show is that filament's, not your preset's. Bambuddy still sends the preset's full cloud ID alongside it, which is what lets Bambu Studio pick your settings up when it can.
+
+!!! note "Why not send the custom ID anyway?"
+    Earlier versions did. The cloud ID is eighteen characters and the field holds eight, so the printer stored a truncated fragment, reported success, and ended up pointing at something that resolves nowhere &mdash; the slicer showed *Generic* **and** the slot lost its calibration entry. Fixed in 1.2.6b1; see [#3003](https://github.com/maziggy/bambuddy/issues/3003).
+
+**2. The printer has never seen the preset.**
+
+Even a preset that has its own ID is only a *name* the printer can print on its screen once it has fetched your filament list from Bambu Cloud. It does that when you open the filament settings screen on the printer while it is connected to the cloud.
+
+Developer Mode &mdash; which Bambuddy needs in order to control the printer at all &mdash; is LAN-only. Bambu state it plainly: Developer Mode *"will not allow the printer to be connected to Bambu Cloud, so it is exclusively working in LAN Mode"* ([Third-party Integration](https://wiki.bambulab.com/en/software/third-party-integration)). A printer that has only ever run in Developer Mode has no custom-filament data to resolve against and falls back to the material.
+
+Bambu document the way around it on [Problems and solutions for Custom Filament](https://wiki.bambulab.com/en/software/bambu-studio/custom-filament-issue): create the preset with the printer in cloud mode, then *"go to the printer screen to select the Filament"* &mdash; entering that screen is what saves the filament data onto the printer itself. Afterwards the printer can name it in LAN mode too.
+
+!!! warning "Presets flagged Action Required in Bambu Studio"
+    A preset created by copying another *user* preset can never be fetched by the printer, whatever mode it is in. Bambu Studio flags these with **\[Action Required\]** in the Custom Filament list. Delete and recreate them from a Bambu base preset &mdash; the same page above walks through it.
 
 #### Printer Model Filtering
 

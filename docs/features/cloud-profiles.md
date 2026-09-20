@@ -345,6 +345,10 @@ Compare your profile to the original template:
 3. Re-authenticate if needed
 4. Check Bambu Cloud status
 
+### A Custom Preset Reaches the Printer as Generic
+
+Your preset syncs and shows up here, you assign it to an AMS slot, and the printer's screen and Bambu Studio both name a generic filament instead. That is a limit of how a filament choice travels to the printer, not a sync failure &mdash; see [Why the printer may still show a generic filament](ams.md#custom-preset-display).
+
 ---
 
 ## :material-lightbulb: Tips

@@ -259,9 +259,10 @@ adapter you already use, from an Administrator PowerShell:
 New-NetIPAddress -InterfaceAlias "Ethernet0" -IPAddress 192.168.1.101 -PrefixLength 24
 ```
 
-They persist across reboots and appear in the dropdown straight away. The
-[Virtual Printer page](../features/virtual-printer.md#dedicated-bind-ip) has
-the full walkthrough.
+They persist across reboots, and the dropdown picks them up when the Settings
+page is reloaded.
+The [Virtual Printer page](../features/virtual-printer.md#dedicated-bind-ip)
+has the full walkthrough.
 
 !!! warning "Don't reach for extra NICs on the same subnet"
     Adding a second network adapter instead of a second address works only
