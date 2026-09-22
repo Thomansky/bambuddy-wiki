@@ -405,11 +405,15 @@ reference photos — without downloading them
 | **STEP** (`.step`, `.stp`) | Interactive 3D view — rotate, zoom and reset exactly like the STL viewer. Multi-part assemblies keep their per-part colours when the file defines them. |
 | **PDF** (`.pdf`) | Inline page viewer with page navigation and zoom. |
 | **Spreadsheets** (`.csv`, `.xlsx`, `.ods`) | Read-only table view. Workbooks with several sheets show one tab per sheet. |
-| **Images** (`.png`, `.jpg`, `.jpeg`, `.gif`, `.webp`, `.bmp`, `.tiff`, `.tif`) | Fitted to the window, then zoom and drag to look closer. |
+| **Images** (`.png`, `.jpg`, `.jpeg`, `.gif`, `.webp`, `.bmp`) | Fitted to the window, then zoom and drag to look closer. |
 
 Printable files have a preview too: `.stl` and source `.3mf` open the 3D
 viewer, and a sliced file (`.gcode`, `.gcode.3mf`) opens the full-page G-code
 viewer.
+
+TIFF files (`.tiff`, `.tif`) get a thumbnail on their card, but no preview:
+browsers other than Safari cannot display them, so the file has to be
+downloaded to be looked at.
 
 ### Opening a preview
 
