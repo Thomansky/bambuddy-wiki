@@ -247,6 +247,7 @@ A print the printer reports as *Completed* can still be scrap — warped, out of
 
 - **Per print**: in the print dialog under *Print Options*, enable **Ask for Outcome**. The flag travels with the queue item and sticks to the archive, so a reprint of that archive asks again.
 - **Global default**: *Settings → Default Print Options → Ask for Outcome* pre-sets the toggle for new prints. Off by default — nothing changes unless you opt in.
+- **Prints Bambuddy did not start**: a print started at the printer, in Bambu Studio or in the Handy app has no queue item to carry the flag, so it is never asked about — unless *Settings → Default Print Options → Also ask for prints started outside Bambuddy* is on, which gives those archives the same prompt. Also off by default, and it never overrides a queue item that has *Ask for Outcome* switched off.
 
 ### Answering
 
