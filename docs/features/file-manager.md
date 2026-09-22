@@ -393,34 +393,47 @@ PDF files inside the archive are thumbnailed as well, checkbox or not.
 
 ---
 
-## :material-file-eye: Document & CAD Previews
+## :material-file-eye: Document, Image & CAD Previews
 
 Beyond the printable formats, the File Manager can preview the other files a
-real job folder tends to contain — source geometry, drawings and part lists —
-without downloading them ([#2976](https://github.com/maziggy/bambuddy/issues/2976)):
+real job folder tends to contain — source geometry, drawings, part lists and
+reference photos — without downloading them
+([#2976](https://github.com/maziggy/bambuddy/issues/2976)):
 
 | File type | Preview |
 |-----------|---------|
 | **STEP** (`.step`, `.stp`) | Interactive 3D view — rotate, zoom and reset exactly like the STL viewer. Multi-part assemblies keep their per-part colours when the file defines them. |
 | **PDF** (`.pdf`) | Inline page viewer with page navigation and zoom. |
 | **Spreadsheets** (`.csv`, `.xlsx`, `.ods`) | Read-only table view. Workbooks with several sheets show one tab per sheet. |
+| **Images** (`.png`, `.jpg`, `.jpeg`, `.gif`, `.webp`, `.bmp`, `.tiff`, `.tif`) | Fitted to the window, then zoom and drag to look closer. |
+
+Printable files have a preview too: `.stl` and source `.3mf` open the 3D
+viewer, and a sliced file (`.gcode`, `.gcode.3mf`) opens the full-page G-code
+viewer.
 
 ### Opening a preview
 
-- **Grid view**: open the file card's three-dot menu (:material-dots-vertical:)
-  and choose **3D Preview** (STEP) or **Preview** (PDF / spreadsheets).
-- **List view**: click the preview icon in the trailing actions column.
+There are three ways, and they all open the same thing:
+
+- **Double-click** the file — on its card in grid view, or on its row in list
+  view. A file with no preview simply does nothing.
+- The **Preview** button in the toolbar above the file list, which appears as
+  soon as exactly one previewable file is selected.
+- The file's own menu: the three-dot menu (:material-dots-vertical:) on the
+  card in grid view, or the preview icon in the trailing actions column in
+  list view.
 
 Previewing needs the same `library:read_own` / `library:read_all` permission
 as downloading the file.
 
 ### Fullscreen and zoom
 
-Every preview has a fullscreen button in its header, and a **double-click on
-the preview area** toggles fullscreen too. `Esc` leaves fullscreen; press it
-again to close the preview. Where the browser does not allow fullscreen for
-page elements (iPhone Safari, some embedded views) the preview fills the
-browser window instead.
+Every preview opens in one large window — as wide as the screen allows, up to
+1800 px — with a fullscreen button in its header, and a **double-click on the
+preview area** toggles fullscreen too. `Esc` leaves fullscreen; press it again
+to close the preview. Where the browser does not allow fullscreen for page
+elements (iPhone Safari, some embedded views) the preview fills the browser
+window instead.
 
 - **PDF**: `Ctrl`/`⌘` + mouse wheel and trackpad pinch zoom around the
   pointer; on a touch screen, pinch with two fingers. The plain wheel zooms
@@ -430,6 +443,10 @@ browser window instead.
   right-drag to pan, in the window and in fullscreen alike. The zoom range is
   bounded so the model can never be dollied out of view; **Reset** returns to
   the framed view.
+- **Images**: the picture opens fitted to the window. The mouse wheel, a
+  trackpad pinch and the `+` / `-` keys zoom around the pointer, `0` and the
+  reset button go back to the fitted view, and once the picture is bigger than
+  the window you can drag it around.
 
 ### Thumbnails
 
@@ -437,6 +454,8 @@ browser window instead.
   uploaded, extracted from a ZIP or found in an external folder scan, and
   through the toolbar's **Generate Thumbnails** button — nobody has to open
   the file. See [STL and PDF Thumbnail Generation](#stl-and-pdf-thumbnail-generation).
+- **Images** are thumbnailed by the server as well, from the picture itself,
+  on upload / ZIP extraction / external scan.
 - **STEP and spreadsheets** are rendered **in your browser** — the server has
   no CAD kernel. The first time someone opens a preview, that first render is
   stored as the file's grid thumbnail (a STEP model's 3D view, a mini table for
@@ -448,7 +467,7 @@ browser window instead.
 
 ### Limits & fallback behaviour
 
-- Spreadsheets over **20 MB**, and PDFs over **50 MB**, show a
+- Spreadsheets over **20 MB**, and PDFs and images over **50 MB**, show a
   "too large to preview" notice instead of stalling the browser.
 - Very large sheets are truncated in the view (first 500 rows / 40 columns,
   with a notice saying so) — scrolling covers the rest of the day-to-day
