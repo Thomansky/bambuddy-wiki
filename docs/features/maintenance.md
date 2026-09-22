@@ -58,7 +58,7 @@ Every type on the **Settings** tab says how far it reaches: *on 7 of 8 printers*
 **Printers** opens a checkbox per eligible printer:
 
 - **Ticking** one puts the type on that printer with the type's own interval and options. If the printer had the task before, it comes back with its history and its interval override rather than starting from zero.
-- **Unticking** one switches the task off on that printer. Nothing is deleted: the history stays, and the card simply leaves that printer's section on the **Status** tab. The switch on the card itself does the same thing from the other side, so a task you turn off there disappears from the section too — tick it again here to bring it back.
+- **Unticking** one switches the task off on that printer. Nothing is deleted: the history stays, and the card leaves the tasks in use in that printer's section on the **Status** tab — it moves down into the **switched off** line under them, where its own switch turns it back on. The switch on the card does the same thing from the other side. If the task had a calibration queued, that run is cancelled with it, so nothing is left holding the print queue.
 
 The default types create themselves on every printer that fits, but they respect a printer you unticked: it stays off until you tick it again.
 
@@ -70,7 +70,7 @@ If a maintenance type isn't relevant to your setup, you can remove it:
 2. Click the :material-delete: icon next to the type
 3. Confirm deletion
 
-Nothing is erased. The type is hidden, its cards leave the printers, and it moves to the **Deleted types** list at the bottom of the tab with the date it went and the number of printer items it kept. **Restore** brings it back exactly as it was, cards and history included — which matters for the two calibration types, whose items carry your option set and your schedule. **Restore Default Tasks** does the same in one go for every hidden default type.
+Nothing is erased. The type is hidden, its cards leave the printers, any calibration it had queued is cancelled, and it moves to the **Deleted types** list at the bottom of the tab with the date it went and the number of printer items it kept. **Restore** brings it back exactly as it was, cards and history included — which matters for the two calibration types, whose items carry your option set and your schedule. **Restore Default Tasks** does the same in one go for every hidden default type.
 
 ### Custom Types
 
