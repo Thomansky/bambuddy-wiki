@@ -24,6 +24,10 @@ The maintenance tracker helps you:
 - **Log** maintenance history
 - **Run** the printer's calibrations for you, by hand, when due, or on a weekday schedule — see [Printer Calibration](#printer-calibration) and [Vision Encoder Calibration](#vision-encoder-calibration)
 
+### Two kinds of task
+
+Most tasks are **reminders**: Bambuddy counts the hours or the days and you do the work and tick it off. A few are **automatic** — the type carries an action Bambuddy can perform itself, like the two calibrations below. Every card carries a small badge saying which it is (**Automatic**, **Runs on request** for an automatic task whose trigger is still *Manual*, or **Manual**), each printer's header counts them (“3 automatic, 6 manual”), and the **All / Automatic / Manual** buttons next to the tabs filter the cards to one kind. The choice is remembered in your browser.
+
 ---
 
 ## :material-format-list-checks: Maintenance Types
@@ -47,25 +51,46 @@ Bambuddy includes common maintenance tasks:
 | **[Printer Calibration](#printer-calibration)** | Every 100 hours | All printers — Bambuddy runs it for you |
 | **[Vision Encoder Calibration](#vision-encoder-calibration)** | Every 7 days | H2S/H2D/H2D Pro/H2C — Bambuddy runs it for you |
 
-### Hiding Default Types
+### Which printers use a type
 
-If a default maintenance type isn't relevant to your setup, you can remove it:
+Every type on the **Settings** tab says how far it reaches: *on 7 of 8 printers*. The second number is the printers the type can apply to at all — a rod type only fits the models that have those rods, and **Vision Encoder Calibration** only fits the H2 series — and the first is how many of them have it switched on. The text turns amber while some eligible printer is missing it.
+
+**Printers** opens a checkbox per eligible printer:
+
+- **Ticking** one puts the type on that printer with the type's own interval and options. If the printer had the task before, it comes back with its history and its interval override rather than starting from zero.
+- **Unticking** one switches the task off on that printer. Nothing is deleted: the history stays, and the card simply leaves that printer's section on the **Status** tab. The switch on the card itself does the same thing from the other side, so a task you turn off there disappears from the section too — tick it again here to bring it back.
+
+The default types create themselves on every printer that fits, but they respect a printer you unticked: it stays off until you tick it again.
+
+### Hiding and restoring types
+
+If a maintenance type isn't relevant to your setup, you can remove it:
 
 1. Go to **Settings** > **Maintenance**
-2. Click the :material-delete: icon next to the default type
+2. Click the :material-delete: icon next to the type
 3. Confirm deletion
 
-Hidden default types can be restored at any time — click **Restore Default Tasks** to bring them all back.
+Nothing is erased. The type is hidden, its cards leave the printers, and it moves to the **Deleted types** list at the bottom of the tab with the date it went and the number of printer items it kept. **Restore** brings it back exactly as it was, cards and history included — which matters for the two calibration types, whose items carry your option set and your schedule. **Restore Default Tasks** does the same in one go for every hidden default type.
 
 ### Custom Types
 
 Create your own maintenance tasks:
 
 1. Go to **Settings** > **Maintenance**
-2. Click **Add Maintenance Type**
-3. Enter name and description
-4. Set default interval
-5. Click **Save**
+2. Click **Add Custom Type**
+3. Enter a name and set the interval (print hours or calendar days)
+4. Optionally pick an **Action** — see below
+5. Pick the printers it applies to
+6. Click **Add Type**
+
+#### Custom types that run something
+
+The **Action** select offers *None (reminder only)*, *Printer calibration* and *Vision encoder calibration*. With an action, the new type behaves exactly like the seeded one of the same kind: its cards get the option checkboxes, the trigger, the weekday schedule, the bed condition and **Run now**.
+
+That is how you get a second calibration next to the default one — a “Monthly full calibration” with every option ticked on the first Sunday, say, while the seeded 100-hour item keeps doing bed levelling alone. The printer picker only offers printers that can perform the chosen action, so a vision encoder type cannot land on an X1C.
+
+!!! note "The action is fixed"
+    A type's action is decided when you create it and cannot be changed afterwards — the items and runs behind it depend on it. Create a second type if you need a different action, and delete the one you no longer want (it stays restorable).
 
 ![Maintenance Settings](../assets/maintenance-2.png){ .screenshot }
 
@@ -161,7 +186,7 @@ Configure when "Due Soon" triggers:
 
 Since 1.2.6 ([#3127](https://github.com/maziggy/bambuddy/issues/3127)) two maintenance types are more than a reminder. **Printer Calibration** is a task Bambuddy performs itself: it tells the printer to run its own calibration routine &mdash; the bed leveling, vibration compensation and motor noise cancellation you would otherwise start from the touchscreen &mdash; and marks the item performed when the printer reports it finished. The second one, [Vision Encoder Calibration](#vision-encoder-calibration), works the same way on the H2 series and is described below.
 
-**Printer Calibration** is a default type (every 100 print hours, all printers), so it sits on every printer's card like the other defaults and can be hidden and restored the same way. On the **Settings** tab it carries a **Runs a calibration** badge. Only these two types can run anything: custom types are reminders only.
+**Printer Calibration** is a default type (every 100 print hours, all printers), so it sits on every printer's card like the other defaults and can be hidden and restored the same way. On the **Settings** tab it carries a **Runs a calibration** badge. A [custom type](#custom-types-that-run-something) can carry the same action, so you can keep a second calibration on its own interval and schedule next to this one.
 
 ### Calibration options
 
@@ -286,7 +311,7 @@ The card is the same as the [Printer Calibration](#printer-calibration) card wit
 !!! tip "If you already had a reminder for it"
     Many H2 owners set up a custom "vision encoder" reminder for this before 1.2.6. The new default item replaces it: it is on the same 7-day cadence and it does the calibration rather than only reminding you. Once you are happy with the new card, delete the custom type on the **Settings** tab (or unassign it from the printer) so the two do not nag in parallel.
 
-Under the hood the run starts the printer's own `calibrate_motion_precision` routine; the printer reports it like any other of its jobs, so it is [not treated as a print](#the-printers-own-calibration-is-no-longer-a-print) either &mdash; no archive, no filament deduction, no plate-clear prompt, no cover lookups. Cancelling from the touchscreen is recognised the same way as for Printer Calibration. Should the item ever end up on a printer without a vision encoder (an assignment made by hand, say), the run is refused with **Vision encoder calibration needs an H2-series printer** instead of sending the printer a file it does not have. The routine lives in a model-specific folder on the printer; Bambuddy learns that folder from the printer's own jobs and falls back to a per-model guess for a printer that has not reported one yet. Should the printer refuse the file, the run fails at once with the printer's answer in the status line rather than waiting for a completion that never comes.
+Under the hood the run starts the printer's own `calibrate_motion_precision` routine; the printer reports it like any other of its jobs, so it is [not treated as a print](#the-printers-own-calibration-is-no-longer-a-print) either &mdash; no archive, no filament deduction, no plate-clear prompt, no cover lookups. Cancelling from the touchscreen is recognised the same way as for Printer Calibration. The **Printers** panel and the custom-type form only offer H2-series printers for this action, and should the item ever end up on another printer anyway, the run is refused with **Vision encoder calibration needs an H2-series printer** instead of sending the printer a file it does not have. The routine lives in a model-specific folder on the printer; Bambuddy learns that folder from the printer's own jobs and falls back to a per-model guess for a printer that has not reported one yet. Should the printer refuse the file, the run fails at once with the printer's answer in the status line rather than waiting for a completion that never comes.
 
 ---
 
