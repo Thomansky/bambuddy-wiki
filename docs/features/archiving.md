@@ -251,11 +251,31 @@ A print the printer reports as *Completed* can still be scrap — warped, out of
 
 ### Answering
 
-When the print completes, a dialog with the [finish photo](#when-the-finish-photo-is-taken) and thumbs-up / thumbs-down buttons opens in the web UI. On the phone, the **Outcome Confirmation** [notification event](notifications.md#event-triggers) delivers one-tap verdict links — as Good/Reject buttons directly in the notification on ntfy and Telegram, as a tap-through to the confirmation dialog on Pushover and Bark, and as plain links on every other channel. The links are single-use and stop working once a verdict lands.
+When the print completes, a dialog with the [finish photo](#when-the-finish-photo-is-taken) and thumbs-up / thumbs-down buttons opens in the web UI. On the phone, the **Outcome Confirmation** [notification event](notifications.md#event-triggers) delivers one-tap verdict links — as Good/Reject buttons directly in the notification on ntfy and Telegram, as a tap-through to the confirmation dialog on Pushover and Bark, and as plain links on every other channel.
 
-The printer card asks too: while an answer is pending, the plate-clear area of the expanded card shows the question — thumbs-up records *Good* right there, thumbs-down opens the dialog for an optional reason, and simply clearing the plate works exactly as before. If answering every print is too much ceremony, enable *Settings → Print Queue → Count unanswered outcomes as good on plate release*: releasing the plate (manually or by the next queued print) then records a still-unanswered prompt as a good part automatically.
+The printer card asks too: while an answer is pending, the plate-clear area of the expanded card shows the question — thumbs-up records *Good* right there, thumbs-down opens the dialog for an optional reason, and simply clearing the plate works exactly as before.
 
 Not ready to decide? Choose *Ask me later*. The archive card then carries an amber **outcome?** badge (click it to answer), the Archives page gains an **Unconfirmed** filter, and the verdict stays editable any time via the card's **Confirm Outcome** context-menu entry or the Edit Archive modal.
+
+### What a One-Tap Link Does
+
+Each link carries a single-use capability for one verdict on one print. Tapping it opens a small page that says one of three things:
+
+| Situation | What you see |
+| --- | --- |
+| The prompt is still open | The verdict is recorded and the page confirms it — *Good part* or *Rejected*. |
+| The print was already answered | **Already answered**, with the verdict on file, when it was recorded and how (in the app, with a link, from the printer card, or when the plate was cleared), plus a link into Bambuddy for changing it. Nothing is overwritten. |
+| The link is not a Bambuddy link | A plain *not found* page. |
+
+A link never changes a verdict that already exists — the answer on file always wins, and the app is the place to revise it.
+
+Wherever a recorded verdict is shown, Bambuddy also says where it came from: as a muted line under the verdict in the Edit Archive dialog and in the outcome dialog, and in the tooltip of the green **good** / red **rejected** badge on the archive card. Verdicts recorded before this existed simply show no hint.
+
+### Answering by Clearing the Plate
+
+If answering every print is too much ceremony, enable *Settings → Print Queue → Count unanswered outcomes as good on plate release*. Releasing the plate — manually, or automatically by the next queued print — then records a still-unanswered prompt as a good part.
+
+The two interact in a way that is worth knowing before you switch it on: the plate release **is** the answer. A print counts as good the moment its plate is released, so a Telegram button or link tapped after that finds the question already settled and shows *Already answered — recorded when the plate was cleared* instead of registering your tap. On a busy farm, where the next job frees the plate within seconds of the prompt going out, this is the common case rather than the exception. Leave the setting off if the phone is where you actually answer.
 
 ### Rejecting
 
