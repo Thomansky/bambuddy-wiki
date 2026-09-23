@@ -59,6 +59,7 @@ This wiki covers installation, every feature in detail, the optional SpoolBuddy 
 - [Cloud profiles](https://wiki.bambuddy.cool/features/cloud-profiles/): Cached from Bambu Cloud, no account required at runtime.
 - [Local profiles](https://wiki.bambuddy.cool/features/local-profiles/): User-defined profiles you fully control.
 - [K-profiles](https://wiki.bambuddy.cool/features/k-profiles/): Per-spool flow calibration values.
+- [Flow dynamics calibration](https://wiki.bambuddy.cool/features/flow-dynamics-calibration/): Measure pressure advance on an H2S by printing the vendor's own calibration job; needs the slicer sidecar, and the result is only written after the user confirms.
 
 ## Operations
 

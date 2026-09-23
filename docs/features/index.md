@@ -189,6 +189,11 @@ Pressure advance settings management for optimal print quality.
 </div>
 
 <div class="feature-card" markdown>
+### [:material-speedometer: Flow Dynamics Calibration](flow-dynamics-calibration.md)
+Measure a filament's pressure advance on the printer and save it as a K-profile.
+</div>
+
+<div class="feature-card" markdown>
 ### [:material-key: API Keys & Webhooks](api-keys.md)
 REST API with granular permissions for external integrations.
 </div>
