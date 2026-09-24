@@ -639,13 +639,13 @@ The header carries the filename and its type badge. Below it come a read-only bl
 
 **External link** — one URL, e.g. `https://printables.com/model/...`. It must start with `http://` or `https://`; the server rejects anything else, since the link is rendered clickable for everyone who can see the file. Once a link is entered, an :material-open-in-new: **Open link** button next to the field opens it in a new tab. Clear the field to remove the link.
 
-Notes and the link are written together when you click **Save** — the button only enables once something has changed, and a *File details saved* toast confirms the write. **Close** discards unsaved edits to those two fields.
+Notes and the link are written together when you click **Save** — the button only enables once something has changed, and a *File details saved* toast confirms the write. **Close**, or ++esc++, discards unsaved edits to those two fields.
 
 **Photos** — thumbnails of the photos already attached, plus a dashed **Add photo** tile:
 
 - Click **Add photo** and pick an image: `.jpg`/`.jpeg`, `.png` or `.webp`, up to 10 MB, one at a time. The upload happens immediately — photos do not wait for **Save**.
 - Hover a thumbnail and click the red :material-delete: **Delete photo** button to remove it. That is immediate too, with no confirmation.
-- Click a thumbnail to open the gallery: a full-screen lightbox with previous / next arrows (or the ← / → keys), a thumbnail strip when there is more than one photo, a **Download** button for the photo on screen, and a delete button that does ask for confirmation. ++esc++ closes it.
+- Click a thumbnail to open the gallery on that photo: a full-screen lightbox with previous / next arrows (or the ← / → keys), a thumbnail strip when there is more than one photo, a **Download** button for the photo on screen, and a delete button that does ask for confirmation. ++esc++ closes the gallery and leaves the details modal open behind it, unsaved edits and all.
 
 Viewers without edit permission see the same photos and gallery, minus deleting, and *No photos yet* when there are none.
 
@@ -673,7 +673,9 @@ On the card the indicators sit under the print count; in the list they follow th
 
 Photos live in Bambuddy's library data directory, under `archive/library/photos/<file id>/`, with generated names — the file's record only holds the list. Since the whole `archive/` tree goes into a [backup](backup.md#zip-structure), so do they.
 
-They leave the disk together with the file: when a trashed file is purged — by **Delete now**, **Empty trash** or the retention sweeper (see [Deleting Files](#deleting-files)) — and immediately when a file that bypasses the Trash, such as an external file, or a whole folder is deleted. Moving a file to the Trash does not touch its photos; restore it and they are back.
+They leave the disk together with the file: when a trashed file is purged — by **Delete now**, **Empty trash** or the retention sweeper (see [Deleting Files](#deleting-files)) — and immediately when a file that bypasses the Trash, such as an external file, or a whole folder is deleted. A scan of an [external folder](#external-folders) that finds the file gone from the share drops its entry the same way, photos included. Moving a file to the Trash does not touch its photos; restore it and they are back.
+
+One flow moves them rather than deleting them. A file dropped straight onto a printer card (see [Drag & Drop](printer-control.md#drag-drop)) is consumed by the print it was uploaded for: once the job is dispatched, Bambuddy replaces the library entry with the [archive](archiving.md) of that print. The photos go across with it and are on that archive afterwards, in its own photo gallery.
 
 ---
 
