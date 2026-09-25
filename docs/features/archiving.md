@@ -259,13 +259,22 @@ Not ready to decide? Choose *Ask me later*. The archive card then carries an amb
 
 ### What a One-Tap Link Does
 
-Each link carries a single-use capability for one verdict on one print. Tapping it opens a small page that says one of three things:
+Each link carries a single-use capability for one verdict on one print. Opening it shows a small page that says one of three things:
 
 | Situation | What you see |
 | --- | --- |
-| The prompt is still open | The verdict is recorded and the page confirms it — *Good part* or *Rejected*. |
+| The prompt is still open | The page asks you to confirm the verdict, and recording it is one press. Coming from a notification **button** — the Good/Reject buttons on ntfy and Telegram — the page submits itself, so the button is still the only tap. |
 | The print was already answered | **Already answered**, with the verdict on file, when it was recorded and how (in the app, with a link, from the printer card, or when the plate was cleared), plus a link into Bambuddy for changing it. Nothing is overwritten. |
 | The link is not a Bambuddy link | A plain *not found* page. |
+
+!!! note "Why the link asks before it records"
+    Opening a link used to record the verdict outright. That is safe only if nothing but a human ever
+    opens it, and plenty does: Telegram and Slack fetch the URLs in a message to build a preview card,
+    mail gateways open links before delivery, browsers prefetch them. Any of those settled the outcome
+    before the operator had read the question — and always in the *Good* direction, because that link
+    comes first in the message. So the link now only shows the question, and a separate confirmation
+    records it. The notification buttons carry a marker that submits the page for you, which is why
+    answering from the notification still costs exactly one tap.
 
 A link never changes a verdict that already exists — the answer on file always wins, and the app is the place to revise it.
 
