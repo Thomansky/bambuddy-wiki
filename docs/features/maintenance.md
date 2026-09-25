@@ -199,10 +199,10 @@ The card lists the routines a run performs. Tick the ones you want; they are sen
 | **Motor noise cancellation** | On by default |
 | **Nozzle offset** | Dual-nozzle printers only (H2D, H2D Pro, H2C, X2D). The checkbox is not shown on other models |
 | **High-temperature bed leveling** | |
-| **Micro Lidar** | Lidar calibration of the X1 series |
+| **Micro Lidar** | X1 series only (X1, X1C, X1E). The checkbox is not shown on other models &mdash; no other printer has the lidar |
 | **Nozzle clumping detection** | |
 
-Apart from **Nozzle offset**, every option is offered on every model; the printer ignores the ones its hardware does not have. At least one option must be ticked before a run can be queued &mdash; otherwise Bambuddy refuses with **Select at least one calibration option**. The options are copied onto a run when it is queued, so changing them afterwards does not alter a run that is already waiting.
+**Nozzle offset** and **Micro Lidar** are the two options tied to hardware, and the checkbox simply is not there on a model without it. The rest are offered everywhere; the printer ignores a bit for hardware it does not have. High-temperature bed levelling is the open case &mdash; in practice a P2S/H2 feature, but not from a source solid enough to hide it by, and hiding a calibration from somebody who needs it is worse than offering a useless one. At least one option must be ticked before a run can be queued &mdash; otherwise Bambuddy refuses with **Select at least one calibration option**. The options are copied onto a run when it is queued, so changing them afterwards does not alter a run that is already waiting.
 
 ### Only when the bed is cold
 
