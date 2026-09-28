@@ -480,48 +480,69 @@ with an n:m assignment, not a free-text field that drifts in spelling.
 - **Master list**: the **Suppliers** button on the Inventory page toolbar,
   right next to **Locations** — suppliers are the same kind of inventory
   master data that spools reference. Each supplier has a name (required),
-  website/shop URL, your own customer number there, and a note. The list
-  shows how many spools reference each supplier, and a referenced supplier
-  cannot be deleted — remove or reassign its spool assignments first.
-- **Assigning on the spool**: the spool dialog gains a **Suppliers**
-  multi-select. Pick any number of suppliers (chips), and create a missing
-  one with **+ New supplier** without leaving the dialog. Per assignment
-  you can record the *supplier's* article number (their number for the
-  product — not your internal one) and a **quoted price per kg** there, so
-  sources of the same product compare at a glance. The quoted price is for
-  comparison only — the spool's own *Cost per kg* stays the cost basis for
-  print costing and is never overwritten by an assignment.
-- **Bought here**: mark on which supplier this concrete spool was actually
-  purchased. The other assignments read as alternative sources. Exactly one
-  assignment can carry the marker.
+  website/shop URL, your own customer number there, and a note. Names are
+  unique regardless of case (`Extrudr` and `extrudr` are the same supplier)
+  and cannot contain `;`, which separates names in the CSV. The list shows
+  how many spools reference each supplier, and a referenced supplier cannot
+  be deleted — remove or reassign its spool assignments first.
+- **Assigning on the spool**: the **Suppliers** section sits on the
+  **Color & Cost** tab of the spool dialog (so it is not shown in Quick
+  Add). Use **Add supplier…** to pick one from the list; typing a name that
+  does not exist yet offers **Create "…"**, so a missing supplier is added
+  without leaving the dialog. Each assignment is a row where you can record
+  the *supplier's* article number (their number for the product — not your
+  internal one) and a **quoted price per kg** there, so sources of the same
+  product compare at a glance. The quoted price is for comparison only — the
+  spool's own *Cost per kg* stays the cost basis for print costing and is
+  never overwritten by an assignment.
+- **Bought here**: tick this on the supplier this concrete spool was actually
+  purchased from. The other assignments read as alternative sources. At most
+  one assignment can carry the marker; leaving it unticked everywhere is
+  fine.
 - **Inheritance**: a new spool of a product that already carries supplier
   assignments — same brand, material, subtype and colour — arrives with the
-  source list filled in (the *bought here* marker is not inherited, since
-  where the new spool was bought is not something Bambuddy can know). This
-  covers manual adds, the API, and RFID auto-added refills.
+  source list filled in, as long as you leave its supplier list untouched
+  when adding it. *Bought here* is not inherited, since where the new spool
+  was bought is not something Bambuddy can know. This covers manual adds,
+  bulk adds (every copy gets the same list), the API, and RFID auto-added
+  refills. **Copying** a spool takes the suppliers of the spool you copied,
+  again without *Bought here*.
+- **Deleting and archiving**: deleting a spool removes its assignments, so
+  its suppliers become deletable again. Archiving keeps them — an archived
+  spool still records where it was bought.
 - **List & search**: an optional sortable *Suppliers* column (purchase
-  source highlighted first), an "everything from supplier X" filter chip,
-  and the free-text search matches supplier names and their article
-  numbers.
-- **Statistics**: the Statistics page gains a **By Supplier** widget —
-  spools, remaining stock, consumption and cost grouped by the
-  purchase-source supplier. Cost aggregates the recorded usage history
-  (based on each spool's *Cost per kg*), never the quoted prices.
-- **CSV & API**: the inventory CSV export carries two columns —
-  `suppliers` (all assigned names, `;`-separated) and `purchase_supplier`
-  (the *bought here* one, or empty). Import matches names against the
-  existing supplier list (trimmed, case-insensitive) and **never creates
-  suppliers**: an unknown name shows up as a warning in the import preview
-  and that assignment is dropped, the row still imports. The REST API
-  exposes `/api/v1/inventory/suppliers` for the list and embeds
-  assignments in the spool responses.
+  source highlighted first), a supplier filter in the filter bar (including
+  *No supplier*), and the free-text search matches supplier names and their
+  article numbers.
+- **Statistics**: the Statistics page gains a
+  [By Supplier](statistics.md#by-supplier) widget — spools, remaining stock,
+  consumption and cost grouped by the *Bought here* supplier. Consumption
+  and cost follow the dashboard's date range; stock is always the current
+  state. Cost aggregates the recorded usage history (based on each spool's
+  *Cost per kg*), never the quoted prices.
+- **CSV & API**: the inventory CSV carries two columns, `suppliers` and
+  `purchase_supplier` — see the [CSV schema](#csv-schema) for how they are
+  matched on import. The REST API exposes `/api/v1/inventory/suppliers` for
+  the list and embeds assignments in the spool responses.
 
 !!! note "Spoolman mode"
-    Suppliers work identically in Spoolman mode — the same toolbar button,
-    the same section in the spool dialog. The assignments are stored on the
+    The supplier list, the toolbar button and the section in the spool
+    dialog are the same in Spoolman mode. The assignments are stored on the
     Bambuddy side (keyed by the Spoolman spool id), because Spoolman's
     `vendor` is the manufacturer (it maps to Bambuddy's **Brand**), not the
-    seller — forcing suppliers into it would corrupt that field.
+    seller — forcing suppliers into it would corrupt that field. Three things
+    differ:
+
+    - **No inheritance** — a new Spoolman spool starts without suppliers,
+      unless you copy an existing one.
+    - **No By Supplier widget** — it groups Bambuddy's own spools, not the
+      Spoolman-side assignments, so it is hidden on the Statistics page.
+    - **No CSV** — import and export are disabled in Spoolman mode, as for
+      the rest of the inventory.
+
+    A spool deleted directly in Spoolman leaves its assignments behind in
+    Bambuddy. They are cleared the next time you try to delete one of its
+    suppliers, provided Spoolman is reachable at that moment.
 
 !!! note "Permissions"
     Suppliers use the regular inventory permissions, exactly like storage
@@ -726,6 +747,8 @@ The header is fixed but **case- and space-tolerant** — `Color Name`, `color-na
 | `storage_location` | | Where the spool is stored (e.g. `Shelf A`). Round-trips on export/import. |
 | `category` | | User-defined category (e.g. `Production`, `Prototype`). Round-trips on export/import. |
 | `low_stock_threshold_pct` | | Per-spool low-stock threshold, `1`–`99` (%). Blank falls back to the global setting. |
+| `suppliers` | | All assigned [suppliers](#suppliers), separated by `;` (e.g. `Extrudr; Filament24`). Matched against your existing supplier list by name, trimmed and case-insensitive. Import **never creates suppliers**: an unknown name is a warning in the preview, that assignment is dropped and the row still imports. |
+| `purchase_supplier` | | The *Bought here* supplier, or blank. Matched the same way; it counts as an assignment even if the `suppliers` cell leaves it out. |
 
 !!! note "`remaining` is display-only"
     Remaining weight is always derived from `label_weight − weight_used`, so it's exported for readability but ignored on import. `weight_used` is the single source of truth — set that to control how full a spool is.

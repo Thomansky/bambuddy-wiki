@@ -105,6 +105,16 @@ Pie chart of material distribution:
 - Legend with exact amounts
 - Percentage breakdown
 
+### By Supplier
+
+Consumption and cost grouped by where the spools were bought:
+
+- One row per supplier marked **Bought here** on at least one spool (see [Suppliers](inventory.md#suppliers))
+- **Spools** and **Remaining** stock — always the current state; an over-used spool counts as empty
+- **Consumed** and **Cost** — from the recorded usage history, following the selected date range; archived spools included
+- Sorted by consumption, heaviest first
+- Hidden in Spoolman mode — it groups Bambuddy's own spools, not the assignments kept for Spoolman spools
+
 ### Printer Utilization
 
 Hours of active printing:
