@@ -321,9 +321,10 @@ During extraction:
 
 ---
 
-## :material-cube-outline: STL Thumbnail Generation
+## :material-cube-outline: STL and PDF Thumbnail Generation
 
-Generate preview thumbnails for STL files to make them easier to identify in your library.
+Bambuddy renders grid thumbnails for STL models and PDF documents itself, so
+both are easy to identify in your library without opening them.
 
 ### Automatic Generation on Upload
 
@@ -336,15 +337,18 @@ When uploading STL files:
 
 Thumbnails are generated automatically during the upload process.
 
-### Generate for Existing STL Files
+PDF files get their first page as the thumbnail on every upload; the checkbox
+only governs STL, because a mesh render takes seconds and a PDF page does not.
 
-For STL files already in your library:
+### Generate for Existing Files
+
+For STL and PDF files already in your library:
 
 1. Click **Generate Thumbnails** button in the toolbar
 2. Select which files to process:
-    - **All missing** - Only STL files without thumbnails
+    - **All missing** - Only STL and PDF files without thumbnails
     - **Selected files** - Only checked files
-    - **Entire folder** - All STL files in current folder
+    - **Entire folder** - All STL and PDF files in current folder
 3. Click **Generate**
 4. Thumbnails appear as they're created
 
@@ -352,7 +356,7 @@ For STL files already in your library:
 
 Generate a thumbnail for one file:
 
-1. Find the STL file
+1. Find the STL or PDF file
 2. Click the three-dot menu (:material-dots-vertical:)
 3. Select **Generate Thumbnail**
 4. The thumbnail updates automatically when done
@@ -365,15 +369,21 @@ When extracting ZIP files containing STL files:
 2. Check **Generate thumbnails for STL files**
 3. Thumbnails are created for all STL files in the archive
 
+PDF files inside the archive are thumbnailed as well, checkbox or not.
+
 ### Technical Details
 
 | Feature | Details |
 |---------|---------|
-| **Rendering** | Lit 3D isometric view using trimesh and matplotlib |
+| **STL rendering** | Lit 3D isometric view using trimesh and matplotlib |
 | **Shading** | A single directional light offset from the camera, so adjacent faces catch it differently and the model shows relief rather than a flat outline |
 | **Color** | Shades of Bambu green (#00AE42) on a dark background |
+| **PDF rendering** | First page rasterised with pypdfium2 (PDFium) and centred on a white 256 × 256 px square, the same shape as a thumbnail from the browser preview |
 | **Format** | PNG (RGBA, fully opaque) |
 | **Size** | Optimized for thumbnail display |
+
+!!! note "When the server cannot render a PDF"
+    `pypdfium2` is a regular dependency and bundles PDFium for every platform Bambuddy ships on (Linux x86_64, arm64 and armv7, macOS, Windows), so no system package is needed. A PDF that PDFium cannot read (damaged or password-protected) gets no server thumbnail; the first time someone opens its preview in the browser, that render becomes the thumbnail instead.
 
 !!! tip "Large STL Files"
     Very complex STL files (100k+ vertices) may take longer to process. The generator handles these gracefully.
@@ -389,6 +399,97 @@ When extracting ZIP files containing STL files:
 
 !!! tip "Large STEP files"
     STEP files are converted to a 3D mesh in your browser. A large export can take a minute or more; the preview shows **Converting STEP model…** with a running seconds counter while it works, so leave it open until the model appears.
+
+---
+
+## :material-file-eye: Document, Image & CAD Previews
+
+Beyond the printable formats, the File Manager can preview the other files a
+real job folder tends to contain — source geometry, drawings, part lists and
+reference photos — without downloading them
+([#2976](https://github.com/maziggy/bambuddy/issues/2976)):
+
+| File type | Preview |
+|-----------|---------|
+| **STEP** (`.step`, `.stp`) | Interactive 3D view — rotate, zoom and reset exactly like the STL viewer. Multi-part assemblies keep their per-part colours when the file defines them. |
+| **PDF** (`.pdf`) | Inline page viewer with page navigation and zoom. |
+| **Spreadsheets** (`.csv`, `.xlsx`, `.ods`) | Read-only table view. Workbooks with several sheets show one tab per sheet. |
+| **Images** (`.png`, `.jpg`, `.jpeg`, `.gif`, `.webp`, `.bmp`) | Fitted to the window, then zoom and drag to look closer. |
+
+Printable files have a preview too: `.stl` and source `.3mf` open the 3D
+viewer, and a sliced file (`.gcode`, `.gcode.3mf`) opens the full-page G-code
+viewer.
+
+TIFF files (`.tiff`, `.tif`) get a thumbnail on their card, but no preview:
+browsers other than Safari cannot display them, so the file has to be
+downloaded to be looked at.
+
+### Opening a preview
+
+There are three ways, and they all open the same thing:
+
+- **Double-click** the file — on its card in grid view, or on its row in list
+  view. A file with no preview simply does nothing.
+- The **Preview** button in the toolbar above the file list, which appears as
+  soon as exactly one previewable file is selected.
+- The file's own menu: the three-dot menu (:material-dots-vertical:) on the
+  card in grid view, or the preview icon in the trailing actions column in
+  list view.
+
+Previewing needs the same `library:read_own` / `library:read_all` permission
+as downloading the file.
+
+### Fullscreen and zoom
+
+Every preview opens in one large window — as wide as the screen allows, up to
+1800 px — with a fullscreen button in its header, and a **double-click on the
+preview area** toggles fullscreen too. `Esc` leaves fullscreen; press it again
+to close the preview. Where the browser does not allow fullscreen for page
+elements (iPhone Safari, some embedded views) the preview fills the browser
+window instead.
+
+- **PDF**: `Ctrl`/`⌘` + mouse wheel and trackpad pinch zoom around the
+  pointer; on a touch screen, pinch with two fingers. The plain wheel zooms
+  while the whole page is visible and scrolls once it is not. Keyboard:
+  `+` / `-` step the zoom, `0` resets it. The zoom buttons remain.
+- **3D viewer (STL, STEP)**: mouse wheel or pinch to zoom, drag to orbit,
+  right-drag to pan, in the window and in fullscreen alike. The zoom range is
+  bounded so the model can never be dollied out of view; **Reset** returns to
+  the framed view.
+- **Images**: the picture opens fitted to the window. The mouse wheel, a
+  trackpad pinch and the `+` / `-` keys zoom around the pointer, `0` and the
+  reset button go back to the fitted view, and once the picture is bigger than
+  the window you can drag it around.
+
+### Thumbnails
+
+- **PDF**: the first page is rendered **on the server** when the file is
+  uploaded, extracted from a ZIP or found in an external folder scan, and
+  through the toolbar's **Generate Thumbnails** button — nobody has to open
+  the file. See [STL and PDF Thumbnail Generation](#stl-and-pdf-thumbnail-generation).
+- **Images** are thumbnailed by the server as well, from the picture itself,
+  on upload / ZIP extraction / external scan.
+- **STEP and spreadsheets** are rendered **in your browser** — the server has
+  no CAD kernel. The first time someone opens a preview, that first render is
+  stored as the file's grid thumbnail (a STEP model's 3D view, a mini table for
+  spreadsheets). Until then the grid shows a per-type icon. Persisting the
+  thumbnail requires `library:update_own` / `library:update_all`; users
+  without it still get the full preview, only the thumbnail is skipped. The
+  same browser fallback covers a PDF the server could not render.
+- A thumbnail that already exists is never replaced by a preview render.
+
+### Limits & fallback behaviour
+
+- Spreadsheets over **20 MB**, and PDFs and images over **50 MB**, show a
+  "too large to preview" notice instead of stalling the browser.
+- Very large sheets are truncated in the view (first 500 rows / 40 columns,
+  with a notice saying so) — scrolling covers the rest of the day-to-day
+  cases; the preview is not an editor.
+- A broken or unreadable file falls back to a short message in the preview
+  and keeps its generic icon in the grid; nothing errors out.
+- The preview libraries (OpenCascade WASM for STEP, pdf.js, SheetJS,
+  PapaParse) are loaded on demand, so they add nothing to the app's initial
+  load time.
 
 ---
 
@@ -729,7 +830,7 @@ External folders are indexed on creation. To pick up new or removed files:
 3. New files are added, deleted files are removed from the index
 
 !!! info "Files Are Not Copied"
-    Bambuddy indexes external files into its database but reads them directly from the original path. No disk space is used for file copies. Thumbnails for 3MF, STL, and gcode files are generated and stored locally.
+    Bambuddy indexes external files into its database but reads them directly from the original path. No disk space is used for file copies. Thumbnails for 3MF, STL, PDF, and gcode files are generated and stored locally.
 
 ### Read-Only Protection
 
