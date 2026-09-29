@@ -342,15 +342,13 @@ only governs STL, because a mesh render takes seconds and a PDF page does not.
 
 ### Generate for Existing Files
 
-For STL and PDF files already in your library:
+For STL and PDF files already in your library, click **Generate Thumbnails**
+in the toolbar. It renders every STL and PDF file that has no thumbnail yet,
+in all folders, and the new thumbnails appear in the grid once the run is
+finished. A toast reports how many succeeded and failed.
 
-1. Click **Generate Thumbnails** button in the toolbar
-2. Select which files to process:
-    - **All missing** - Only STL and PDF files without thumbnails
-    - **Selected files** - Only checked files
-    - **Entire folder** - All STL and PDF files in current folder
-3. Click **Generate**
-4. Thumbnails appear as they're created
+With `library:update_all` the run covers everyone's files. With only
+`library:update_own` it covers the files you uploaded yourself.
 
 ### Single File Generation
 
@@ -383,7 +381,7 @@ PDF files inside the archive are thumbnailed as well, checkbox or not.
 | **Size** | Optimized for thumbnail display |
 
 !!! note "When the server cannot render a PDF"
-    `pypdfium2` is a regular dependency and bundles PDFium for every platform Bambuddy ships on (Linux x86_64, arm64 and armv7, macOS, Windows), so no system package is needed. A PDF that PDFium cannot read (damaged or password-protected) gets no server thumbnail; the first time someone opens its preview in the browser, that render becomes the thumbnail instead.
+    `pypdfium2` is a regular dependency and bundles PDFium for every platform Bambuddy ships on (Linux x86_64, arm64 and armv7, macOS, Windows), so no system package is needed. A PDF that PDFium cannot read gets no server thumbnail. If the browser preview can still open it, the first time someone does so that render becomes the thumbnail instead. A password-protected PDF gets neither a thumbnail nor a preview: the preview has no password prompt.
 
 !!! tip "Large STL Files"
     Very complex STL files (100k+ vertices) may take longer to process. The generator handles these gracefully.
@@ -464,9 +462,11 @@ window instead.
 ### Thumbnails
 
 - **PDF**: the first page is rendered **on the server** when the file is
-  uploaded, extracted from a ZIP or found in an external folder scan, and
-  through the toolbar's **Generate Thumbnails** button — nobody has to open
-  the file. See [STL and PDF Thumbnail Generation](#stl-and-pdf-thumbnail-generation).
+  uploaded or extracted from a ZIP, and through the toolbar's **Generate
+  Thumbnails** button — nobody has to open the file. PDFs found by an
+  external folder scan are rendered in the background after the scan
+  finishes, alongside the STL thumbnails, so they fill in over the following
+  seconds. See [STL and PDF Thumbnail Generation](#stl-and-pdf-thumbnail-generation).
 - **Images** are thumbnailed by the server as well, from the picture itself,
   on upload / ZIP extraction / external scan.
 - **STEP and spreadsheets** are rendered **in your browser** — the server has
@@ -475,7 +475,8 @@ window instead.
   spreadsheets). Until then the grid shows a per-type icon. Persisting the
   thumbnail requires `library:update_own` / `library:update_all`; users
   without it still get the full preview, only the thumbnail is skipped. The
-  same browser fallback covers a PDF the server could not render.
+  same browser fallback covers a PDF the server could not render, as long as
+  the browser can open it.
 - A thumbnail that already exists is never replaced by a preview render.
 
 ### Limits & fallback behaviour
@@ -486,7 +487,12 @@ window instead.
   with a notice saying so) — scrolling covers the rest of the day-to-day
   cases; the preview is not an editor.
 - A broken or unreadable file falls back to a short message in the preview
-  and keeps its generic icon in the grid; nothing errors out.
+  and keeps its generic icon in the grid; nothing errors out. That includes
+  password-protected PDFs, which the preview cannot unlock.
+- STEP files are converted to a 3D mesh in your browser. A large export can
+  take a minute or more; the preview shows **Converting STEP model…** with a
+  running seconds counter while it works, so leave it open until the model
+  appears.
 - The preview libraries (OpenCascade WASM for STEP, pdf.js, SheetJS,
   PapaParse) are loaded on demand, so they add nothing to the app's initial
   load time.
