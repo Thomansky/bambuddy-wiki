@@ -390,19 +390,16 @@ When spools are removed from AMS:
 
 Get notified when spools run low:
 
-### In Spoolman
+Bambuddy sends the alert; Spoolman supplies the remaining weight.
 
-Configure low stock threshold:
+1. Assign your Spoolman spools to AMS slots in Bambuddy.
+2. Set the low-stock threshold on the **Inventory** page (default 20 %).
+3. Enable the **Low Filament** event on a notification provider.
 
-1. Set minimum quantity per spool
-2. Spoolman alerts when below
+When an assigned spool drops below the threshold you get one notification, such as "X2D: Slot A1 at 15%". It can fire again once the spool goes back above the threshold, for example when you load a fresh one.
 
-### In Bambuddy
-
-Notifications for low filament:
-
-- Enable **Low Filament** event
-- Get notified when AMS spool is low
+!!! note
+    In Spoolman mode only the global threshold applies. The per-spool override is a field of Bambuddy's own inventory and has no counterpart in Spoolman.
 
 [:material-arrow-right: Notification setup](notifications.md)
 

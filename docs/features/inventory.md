@@ -32,7 +32,7 @@ The Spool Inventory page shows all your spools in a searchable, filterable table
 - **Stock filter**: All, Stock (no slicer profile), Configured (has slicer profile)
 - **Dropdowns**: Filter by Material, Brand, Category, Spool Name, **Storage Location**
     - The **Storage Location** chip lists every entry in your [storage locations catalog](storage-locations.md) (e.g. *Shelf A*, *4l drybox*), plus **No location set** for unassigned spools. The chip stays hidden until at least one spool has a storage location. Manage the catalog from **Inventory → Locations** — see [Storage Locations](storage-locations.md).
-- **Search**: Find spools by name, brand, material, or color
+- **Search**: Find spools by name, brand, material, or color. Enter an ID with a leading `#` (for example, `#42`) to find only that exact spool; a number without `#` keeps the normal partial search behavior. The same search works in the **Assign Spool** dialog and on the SpoolBuddy inventory page.
 - **View modes**: Table or Cards
 - **Group similar**: Toggle to visually collapse identical unused/unassigned spools into a single expandable row or card with a count badge (e.g., "5 identical spools"). Spools are grouped by material, subtype, brand, color, and label weight. Used or AMS-assigned spools always appear individually. Group state persists across sessions.
 
@@ -176,7 +176,7 @@ Custom materials work just like built-in ones for inventory tracking, usage hist
 | **Cost per kg** | Used for archive cost roll-ups in Statistics. |
 | **Category** | Free-text label like *Production*, *Prototype*, or *Client A*. Used purely for organisation — appears as an inventory filter chip and as a way to group spools that share a different low-stock threshold. The form autocompletes from categories already in use across your other spools so casing stays consistent. Optional. |
 | **Material No.** | Your internal purchasing / article number (e.g. *15* = Bambu Lab PLA Basic). Shared by every spool of the same product — see [Material Numbers](#material-numbers). Optional. |
-| **Low-stock threshold (this spool)** | Per-spool override of the global low-stock percentage. Leave blank to use whatever's set in the inventory's stat-card threshold control (default 20 %). Useful for marking *production* spools to alert earlier (e.g. 50 %) while letting *prototype* spools stay quiet until much later. The override applies to both the stat-card "Low Stock" count and the "Low Stock" filter. |
+| **Low-stock threshold (this spool)** | Per-spool override of the global low-stock percentage. Leave blank to use whatever's set in the inventory's stat-card threshold control (default 20 %). Useful for marking *production* spools to alert earlier (e.g. 50 %) while letting *prototype* spools stay quiet until much later. The override applies to the stat-card "Low Stock" count, the "Low Stock" filter and the [Low Filament notification](notifications.md#printer-events). |
 | **Storage Location** | Physical shelf, drawer, or drybox from your [locations catalog](storage-locations.md). Pick an existing entry from the dropdown or type a new name and click **Add**. |
 | **Note** | Free-text notes about the spool |
 
@@ -267,19 +267,35 @@ Assign inventory spools to AMS slots to track which filament is loaded where.
 
 ### Assigning a Spool
 
+You can start an assignment from either the printer card or the spool itself.
+
+#### From a printer card
+
 1. Hover over any AMS slot on the printer card (empty or configured, non-Bambu-Lab)
 2. Click **Assign Spool** in the hover card
 
 ![Assign Spool](../assets/inventory-assign.png){ .screenshot }
 
-3. Select a spool from the filtered list
+3. Select a spool from the filtered list. Each result includes its `#ID`, which helps distinguish otherwise identical spools.
 4. Click **Assign Spool** to confirm
 
 The assign modal automatically:
 
-- **Filters out Bambu Lab spools** — these are tracked via RFID and managed by the AMS
 - **Filters out already-assigned spools** — each spool can only be in one slot at a time
-- Shows only manually added (non-BL) spools
+- **Shows only matching spools** — a spool is listed when its slicer profile or material matches the slot (a partial material match counts, so a PLA spool fits a PLA Basic slot). **Show all spools** lifts this filter and also lists spools already assigned to another slot
+
+#### From the spool editor or QR view
+
+1. Open an existing spool from Inventory, or scan its Bambuddy QR code.
+2. If the spool has no slot yet, click **Assign Spool** in the spool editor. An assigned spool shows **Unassign** there instead.
+3. Select the printer, then an AMS, AMS-HT or external slot.
+4. Review the selected slot and click **Assign Spool** to confirm.
+
+To change the spool's color, use the **Color & Cost** tab in the spool editor.
+
+Selecting a slot does not change the assignment until you click the confirmation button. If the spool material conflicts with the material reported by the slot, Bambuddy asks you to confirm the mismatch. An offline printer or an unavailable AMS is shown in the dialog instead of silently failing.
+
+Keyboard users can select AMS slots with <kbd>Enter</kbd> or <kbd>Space</kbd>.
 
 ### Bulk actions
 
@@ -335,6 +351,8 @@ Slots containing Bambu Lab spools (identified by RFID) do not show assign/unassi
     When a Bambu Lab spool is inserted into a slot that has a manual spool assignment, the assignment is automatically removed.
 
     The same happens when the slot's filament stops matching the spool at all — a different colour or a different material means a different roll is in there, so the stale assignment is released rather than left pointing at filament you are no longer printing. A slot that empties during a print is left alone, because that is a runout and the spool is still in the AMS.
+
+    Taking a spool out releases its assignment after two minutes, not at once. The AMS sometimes reports a slot, or a whole unit, as empty for a moment while every spool stays where it is, and an assignment released on that report would be lost for good. A slot that reads normally again within the two minutes keeps its assignment. A different spool the AMS can identify still releases the old assignment straight away. One it cannot read releases it when the two minutes are up.
 
 !!! info "Stable Assignments on Startup"
     Spool assignments are preserved across Bambuddy restarts. If the same spool is still in the slot (verified by RFID identifiers), the assignment is kept without sending any commands to the printer.
@@ -575,13 +593,15 @@ two are independent.
   automatically. That covers manual adds, bulk adds, the API, and spools
   created by the RFID auto-add when a new refill is scanned. A blank field
   on a new spool of such a product therefore always inherits: to keep one
-  spool deliberately unnumbered, clear its number after adding it.
+  spool deliberately unnumbered, clear its number after adding it. If
+  spools of the same product carry different numbers, the most recently
+  updated one is used; bulk-edit them to one number to avoid surprises.
   **CSV import does not inherit** — the file is authoritative, so a row
   without a number imports without one.
 - **List & search**: an optional sortable *Material No.* column (enable it
-  in the column chooser), a filter chip ("everything with number 15",
-  including a *No material number* option), and the free-text search also
-  matches the number.
+  in the column chooser; numbers sort numerically, `2` before `15`), a
+  filter chip ("everything with number 15", including a *No material
+  number* option), and the free-text search also matches the number.
 - **Statistics**: the Statistics page gains a
   [By Material Number](statistics.md#by-material-number) widget — spool
   count, remaining stock, consumed grams and cost per number. Consumption
@@ -961,7 +981,7 @@ Assigning a spool is the simplest workflow — it handles both tracking and prin
     For the most accurate remaining weight, weigh the full spool on a kitchen scale and subtract the empty spool weight. Enter this as the remaining weight when adding a new spool.
 
 !!! tip "Low Stock Alerts"
-    Keep an eye on the "Low Stock" summary card. Spools below 20% remaining are flagged so you can reorder before running out.
+    Keep an eye on the "Low Stock" summary card. Spools below 20% remaining are flagged so you can reorder before running out. To be told instead, enable the **Low Filament** event on a [notification provider](notifications.md#printer-events); it covers spools assigned to a slot.
 
 !!! tip "PA Profiles"
     Link K-factor profiles to your spools so the correct pressure advance settings are always associated with each filament.

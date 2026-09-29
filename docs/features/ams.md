@@ -873,7 +873,7 @@ Get notified about AMS conditions:
 | Event | Description |
 |-------|-------------|
 | **High Humidity** | When humidity exceeds threshold |
-| **Low Filament** | When filament is running low |
+| **Low Filament** | When the spool assigned to a slot drops below its low-stock threshold ([details](notifications.md#printer-events)) |
 | **AMS Error** | When AMS encounters issues |
 
 ### Setting Up

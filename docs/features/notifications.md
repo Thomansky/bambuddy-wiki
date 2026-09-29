@@ -382,7 +382,7 @@ When a camera snapshot is available (e.g. First Layer Complete, Print Started, P
 | **Printer Error** | A new HMS fault, with the description Bambu publishes for it on your printer model. Faults Bambu publishes no text for, and notices that don't need you (such as "The top cover is open"), are not sent; see [HMS Error Monitoring](monitoring.md#error-details). |
 | **AI Failure Detection** | Obico ML detected a possible print failure (spaghetti, layer shift, etc.). Fires only when [Failure Detection](failure-detection.md) is enabled and the printer crosses the configured sensitivity threshold. Off by default. |
 | **Printer Sensor Alert** | A [Home Assistant sensor](sensors.md#printer-sensors) bound to a printer entered its alert state — an enclosure door opened, a chamber ran hot. Fires on the transition in, not repeatedly. Off by default. Storage-location sensors have their own event, below. |
-| **Low Filament** | Filament running low |
+| **Low Filament** | A spool assigned to an AMS slot or external holder dropped below its [low-stock threshold](inventory.md#additional-section): the same global percentage (default 20 %) and per-spool override that drive the inventory's Low Stock count, so the alert and the card agree. Remaining filament comes from the spool's weight, never the AMS remain percentage. Sent once per spool and slot; it can fire again after the spool goes back above the threshold. Slots with no assigned spool never alert. Off by default. |
 | **Maintenance Due** | Scheduled maintenance is due |
 
 ### AMS Events
@@ -573,8 +573,9 @@ Insert dynamic content with `{variable}`:
 **AMS Events:**
 
 - `{printer}` - Printer name
-- `{slot}` - AMS slot
+- `{slot}` - AMS slot (e.g. "A1", "HT-A", "Ext-L")
 - `{remaining_percent}` - Filament left
+- `{color}` - Colour name of the spool (Low Filament only)
 - `{humidity}` - Humidity level
 - `{ams_label}` - Which unit (e.g. "AMS-A")
 - `{threshold}` - The configured threshold the reading is measured against
