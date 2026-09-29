@@ -129,6 +129,35 @@ Each file shows:
 
 ---
 
+## :material-view-column: Column View
+
+Next to **Grid** and **List**, the view switcher in the File Manager header offers **Column view** — Miller columns, as in the macOS Finder or a file dialog. It shows where you are in the folder hierarchy and lets you walk up and down it without going back to the tree on the left.
+
+![File Manager column view](../assets/file_manager_columns.png){ .screenshot }
+
+- **One column per folder level.** The first column lists the top-level folders, each selected folder opens its subfolders in the next column, and the pane on the right lists the selected folder's files.
+- **Every column lists that level's files as well**, below its subfolders, so a folder that holds files but no subfolders never looks empty. The first column shows the files that sit in no folder at all. Clicking a file in one of the earlier columns focuses it without changing the selected folder.
+- **One selection, everywhere.** Clicking a folder in a column is the same as clicking it in the tree, and the columns follow the tree's selection too. Folders show their file count and a chevron when they have subfolders; external folders keep their own icon, and the internal / external split works as in the tree.
+- **Actions**: file rows carry the same icons as the list view (Print, Slice, Preview, Download, File details, Rename, Generate Thumbnail, Delete), shown on hover — always on touch devices and on the focused row. Folder rows have the tree's :material-dots-vertical: menu. Double-click a file to open its [preview](#opening-a-preview).
+- **Search and tag filters** find matches in every subfolder, so while one is active the folder columns step aside and the file list takes the full width.
+- **Selections stay with their folder**: switching to another folder clears the selection, so Move and Delete never act on files that are no longer on screen.
+- The view is remembered in your browser, like Grid and List.
+
+### Keyboard
+
+The column view is keyboard-driven once it has focus (it takes it when the view opens; click into it after using the search box).
+
+| Shortcut | Action |
+|----------|--------|
+| ++arrow-up++ ++arrow-down++ | Move within the current column. Past a column's last folder the column's own files follow; ++arrow-up++ at the first file steps back onto the folders |
+| ++arrow-right++ or ++enter++ (on a folder) | Open the first subfolder; on a folder without subfolders, move into its files |
+| ++arrow-left++ | Go up one level, or leave the file list |
+| ++enter++ (on a file) | Open the file's preview |
+| ++space++ | Select or deselect the focused file |
+| Menu key or ++shift+f10++ | Jump into the focused file's action icons (++arrow-left++ / ++arrow-right++ walk them, ++enter++ activates one, ++escape++ returns to the columns); on a folder, open its :material-dots-vertical: menu |
+
+---
+
 ## :material-navigation: Navigation
 
 ### Browsing
@@ -427,12 +456,13 @@ downloaded to be looked at.
 There are three ways, and they all open the same thing:
 
 - **Double-click** the file — on its card in grid view, or on its row in list
-  view. A file with no preview simply does nothing.
+  or column view (in column view, **Enter** on the focused file does the
+  same). A file with no preview simply does nothing.
 - The **Preview** button in the toolbar above the file list, which appears as
   soon as exactly one previewable file is selected.
 - The file's own menu: the three-dot menu (:material-dots-vertical:) on the
-  card in grid view, or the preview icon in the trailing actions column in
-  list view.
+  card in grid view, or the preview icon among the row's actions in list and
+  column view.
 
 Previewing needs the same `library:read_own` / `library:read_all` permission
 as downloading the file.
