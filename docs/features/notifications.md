@@ -215,7 +215,7 @@ how you answer that prompt on Telegram:
 |--------|----------------|
 | **Inline buttons (link)** | 👍 Good / 👎 Reject buttons under the message, each opening a one-tap verdict link. The default. Needs the *External URL* setting, and your phone has to be able to reach that address. |
 | **Reaction (👍 / 👎)** | No buttons — the prompt ends with *React with 👍 or 👎 to record the outcome.* and you answer by reacting to the message. |
-| **Buttons and reaction** | Both at once; use whichever is handier. The buttons still need the External URL — without it only the reaction is offered. |
+| **Buttons and reaction** | Both at once; use whichever is handier. The buttons still need the External URL: without it they point at `APP_URL`, which defaults to `localhost`, so only the reaction works from the phone. |
 
 !!! tip "Reactions work away from the LAN"
     A reaction needs no inbound connectivity to Bambuddy: your phone only talks
@@ -256,7 +256,8 @@ in the Edit Archive modal.
 - **Conflicts show on the provider.** A conflict appears as a provider error —
   the red **Error** label on the provider card, with Telegram's message in its
   tooltip — and Bambuddy retries every five minutes. A wrong or deleted bot
-  token is reported the same way.
+  token is reported the same way. The label goes away with the next
+  notification the provider delivers.
 - **One poll per bot.** Several providers sharing a bot token — one per
   printer, say — share a single poll; each reaction is matched to the provider
   that sent the prompt.
