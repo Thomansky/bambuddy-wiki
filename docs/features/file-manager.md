@@ -138,9 +138,9 @@ Next to **Grid** and **List**, the view switcher in the File Manager header offe
 - **One column per folder level.** The first column lists the top-level folders, each selected folder opens its subfolders in the next column, and the pane on the right lists the selected folder's files.
 - **Every column lists that level's files as well**, below its subfolders, so a folder that holds files but no subfolders never looks empty. The first column shows the files that sit in no folder at all. Clicking a file in one of the earlier columns focuses it without changing the selected folder.
 - **One selection, everywhere.** Clicking a folder in a column is the same as clicking it in the tree, and the columns follow the tree's selection too. Folders show their file count and a chevron when they have subfolders; external folders keep their own icon, and the internal / external split works as in the tree.
-- **Actions**: file rows carry the same icons as the list view (Print, Slice, Preview, Download, File details, Rename, Generate Thumbnail, Delete), shown on hover — always on touch devices and on the focused row. Folder rows have the tree's :material-dots-vertical: menu. Double-click a file to open its [preview](#opening-a-preview).
+- **Actions**: file rows carry the same icons as the list view (Print, Slice, Run with pipeline, Preview, Download, File details, Rename, Generate Thumbnail, Delete), shown on hover — always on touch devices and on the focused row. Folder rows have the tree's :material-dots-vertical: menu. Double-click a file to open its [preview](#opening-a-preview).
 - **Search and tag filters** find matches in every subfolder, so while one is active the folder columns step aside and the file list takes the full width.
-- **Selections stay with their folder**: switching to another folder clears the selection, so Move and Delete never act on files that are no longer on screen.
+- **Selections stay with their folder**: switching to another folder clears the selection (in every view), so Move and Delete never act on files that are no longer on screen.
 - The view is remembered in your browser, like Grid and List.
 
 ### Keyboard
